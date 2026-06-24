@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Archive</title>
+<style>
+  @font-face {
+    font-family: 'Cascadia Code';
+    src: local('Cascadia Code'), local('Cascadia Mono');
+  }
+
+  :root {
+    --bg: #000000;
+    --fg: #00FF00;
+    --scanline: rgba(0, 0, 0, 0.18);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  body {
+    font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SF Mono', Menlo, 'Courier New', monospace;
+    font-variant-ligatures: none;
+    cursor: default;
+  }
+
+  /* CRT screen container */
+  .crt {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+  }
+
+  .crt::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 1px,
+      var(--scanline) 2px,
+      var(--scanline) 3px
+    );
+    z-index: 3;
+    opacity: 0.5;
+  }
+
+  .crt::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    animation: flicker 6s infinite;
+  }
+
+  @keyframes flicker {
+    0%, 96%, 100% { opacity: 1; }
+    97% { opacity: 0.94; }
+    98% { opacity: 1; }
+    99% { opacity: 0.97; }
+  }
+
+  .terminal {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    padding: 4vh 4vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .lines {
+    font-size: clamp(13px, 1.6vw, 19px);
+    line-height: 1.65;
+    color: var(--fg);
+    white-space: pre-wrap;
+    max-width: 900px;
+    text-shadow: 0 0 3px var(--fg);
+  }
+
+  .line {
+    opacity: 0;
+    display: block;
+  }
+
+  .line.shown {
+    opacity: 1;
+  }
+
+  .menu-row {
+    white-space: pre;
+    text-shadow: 0 0 3px var(--fg);
+  }
+
+  .menu-row.selected {
+    color: #000000;
+    background: var(--fg);
+    text-shadow: none;
+  }
+
+  .hint {
+    position: absolute;
+    bottom: 3vh;
+    left: 4vw;
+    font-size: clamp(10px, 1vw, 12px);
+    color: var(--fg);
+    opacity: 0;
+    transition: opacity 1s ease;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 3px var(--fg);
+  }
+
+  .hint.shown { opacity: 0.6; }
+
+  /* ---- Play/Run screens ---- */
+  .play-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    color: var(--fg);
+    text-shadow: 0 0 3px var(--fg);
+    font-size: clamp(13px, 1.6vw, 19px);
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #play-screen-content {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+
+  #play-screen-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #play-screen-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #play-screen-content::-webkit-scrollbar-thumb {
+    background: var(--fg);
+    opacity: 0.4;
+  }
+
+  .search-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6ch;
+  }
+
+  #game-search {
+    flex: 1;
+    max-width: 500px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--fg);
+    outline: none;
+    color: var(--fg);
+    font-family: inherit;
+    font-size: inherit;
+    caret-color: var(--fg);
+    padding: 0.2em 0;
+    text-shadow: 0 0 3px var(--fg);
+  }
+
+  #game-search::placeholder {
+    color: var(--fg);
+    opacity: 0.4;
+  }
+
+  .section-title {
+    font-size: 0.9em;
+    opacity: 0.7;
+    margin-top: 0.5em;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .game-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+  }
+
+  .game-row {
+    white-space: pre;
+  }
+
+  .game-row.selected {
+    color: #000000;
+    background: var(--fg);
+    text-shadow: none;
+  }
+
+  .no-results {
+    opacity: 0.5;
+  }
+
+
+</style>
+</head>
+<body>
+
+<div class="crt">
+  <div class="terminal">
+    <div class="lines" id="lines"></div>
+    <div class="play-screen" id="play-screen" style="display:none;"></div>
+  </div>
+  <div class="hint" id="hint">[ press any key to enter fullscreen ]</div>
+</div>
+
+
+
+<script>
+  // =========================================================================
+  // EDIT YOUR ARRAYS HERE
+  // =========================================================================
+  const games = [
+    { name: "doodlejump", url: "game-assets/DJ.html", popular: false, newRelease: false },
+    { name: "2048", url: "game-assets/2048.html", popular: false, newRelease: false },
+    { name: "drivemad", url: "game-assets/DM.html", popular: true, newRelease: false },
+    { name: "driftboss", url: "game-assets/DB.html", popular: true, newRelease: false },
+    { name: "minesweeper", url: "game-assets/minesweeper.html", popular: false, newRelease: false },
+    { name: "escaperoad2", url: "game-assets/ER2.html", popular: true, newRelease: false },
+    { name: "escaperoad3", url: "game-assets/ER3.html", popular: true, newRelease: false },
+    { name: "driveinrussia", url: "game-assets/DR.html", popular: false, newRelease: false },
+    { name: "escaperoad", url: "game-assets/ER1.html", popular: false, newRelease: false },
+    { name: "baldisbasics", url: "game-assets/BB.html", popular: false, newRelease: false },
+    { name: "baseballbros", url: "game-assets/BB2.html", popular: true, newRelease: false },
+    { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: true },
+    { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: true },
+    { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: true },
+    { name: "Minecraft - v1.12.2", url: "game-assets/MC1.12.html", popular: true, newRelease: true },
+    { name: "Gran Turismo 2", url: "game-assets/GT2.html", popular: true, newRelease: false },
+    { name: "Gran Turismo", url: "game-assets/GT1.html", popular: true, newRelease: false },
+    { name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: true, newRelease: false },
+    { name: "Grand Theft Auto 2", url: "game-assets/GTA2.html", popular: true, newRelease: false },
+    { name: "Doom", url: "game-assets/DM1.html", popular: false, newRelease: false },
+    { name: "Quake", url: "game-assets/QK.html", popular: false, newRelease: false },
+    { name: "Oregon Trail", url: "game-assets/OT.html", popular: false, newRelease: false },
+    { name: "Half-Life", url: "game-assets/HL.html", popular: true, newRelease: false },
+    { name: "Hill Climb Racing", url: "game-assets/HCR.html", popular: false, newRelease: false },
+    { name: "Highway Racer", url: "game-assets/HR.html", popular: false, newRelease: false },
+    { name: "Highway Racer 2", url: "game-assets/HR2.html", popular: false, newRelease: false },
+    { name: "Crossy Road", url: "game-assets/CR.html", popular: true, newRelease: false },
+    { name: "Cut the rope", url: "game-assets/CTR.html", popular: false, newRelease: false },
+    { name: "Temple Run 2", url: "game-assets/TR2.html", popular: false, newRelease: false },
+    { name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false },
+    { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false },
+    { name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false },
+    { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false }
+  ].filter(g => g.name && g.url); // FIX: guard against blank entries
+
+  const tools = [
+    { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true }
+  ].filter(t => t.name && t.url); // FIX: guard against blank entries
+
+  const menuOptions = [
+    { label: "Run Games", action: "play" },
+    { label: "Run Software", action: "run" },
+    { label: "about", action: "about" },
+    { label: "exit", action: "exit" }
+  ];
+
+  const script = [
+    { text: "SYSTEM BOOT // The Archive TERMINAL v0.4" },
+    { text: "" },
+    { text: "initializing display .......... OK" },
+    { text: "loading archive index ......... OK" },
+    { text: "mounting /games /tools ......... OK" },
+    { text: "" },
+    { text: "welcome." },
+    { text: "" },
+    { text: "select an option:" },
+    { text: "" },
+    { type: "menu" },
+    { text: "" },
+    { text: "use \u2191 \u2193 to choose, enter to select" }
+  ];
+
+  const linesEl = document.getElementById('lines');
+  const hintEl = document.getElementById('hint');
+
+  let i = 0;
+  let selectedIndex = 0;
+  let menuActive = false;
+  let fullscreenRequested = false;
+
+  function requestFullscreen() {
+    if (fullscreenRequested) return;
+    fullscreenRequested = true;
+    hintEl.classList.remove('shown');
+    const el = document.documentElement;
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    } else if (el.msRequestFullscreen) {
+      el.msRequestFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', requestFullscreen, { once: true });
+  document.addEventListener('click', requestFullscreen, { once: true });
+
+  function handleSelection(action) {
+    menuActive = false;
+    document.removeEventListener('keydown', onMenuKeydown);
+
+    const menuEl = document.getElementById('menu-list');
+    if (menuEl) {
+      [...menuEl.children].forEach((row, idx) => {
+        row.classList.remove('selected');
+        row.textContent = `    ${menuOptions[idx].label}`;
+      });
+    }
+
+    let response = "";
+    switch (action) {
+      case "play":
+        openBrowseScreen("games");
+        return;
+      case "run":
+        openBrowseScreen("tools");
+        return;
+      case "about":
+        response = "> A library of archived games and small programs, including but not limited to, penetration test software, Ported MS-DOS games, UGS Games. All of it is made so that it can be run offline, once the offline copy was downloaded. The archive can run on my computer, chromebook, or other devices that can run a modern web browser, like chrome. It was built by an anonymous developer, who goes by the name ikobiz on github. This version of The Archive was updated in 6/21/2026, and is version 0.4. Enjoy exploring the collection of games and software, and feel free to direct message me on discord (my username on discord is also ikobiz) if you have any questions, suggestions, or want to contribute!";
+        break;
+      case "exit":
+        response = "> goodbye.";
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        break;
+    }
+
+    const spacer1 = document.createElement('div');
+    spacer1.className = 'line shown';
+    spacer1.innerHTML = '&nbsp;';
+    linesEl.appendChild(spacer1);
+
+    const responseLine = document.createElement('div');
+    responseLine.className = 'line shown';
+    responseLine.style.whiteSpace = 'pre-wrap';
+    responseLine.textContent = response;
+    linesEl.appendChild(responseLine);
+  }
+
+  // ---- Shared Browsing Subsystem (Games / Tools) ----
+  let currentDataset = [];
+  let filteredItems = [];
+  let itemSelectedIndex = 0;
+  let currentMode = "games"; // "games" or "tools"
+
+  function openBrowseScreen(mode) {
+    currentMode = mode;
+    currentDataset = (mode === "games") ? games : tools;
+
+    linesEl.innerHTML = '';
+    linesEl.style.display = 'none';
+
+    const playScreen = document.getElementById('play-screen');
+    playScreen.style.display = 'flex';
+    playScreen.innerHTML = `
+      <div class="search-row">
+        <label for="game-search">search:</label>
+        <input type="text" id="game-search" autocomplete="off" spellcheck="false" placeholder="type to filter..." />
+      </div>
+      <div id="play-screen-content"></div>
+      <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ ESC: main menu | ENTER: launch ]</div>
+    `;
+
+    const searchInput = document.getElementById('game-search');
+    searchInput.focus();
+    searchInput.addEventListener('input', onItemSearchInput);
+    
+    itemSelectedIndex = 0;
+    updateItemFilter("");
+    document.addEventListener('keydown', onBrowseScreenKeydown);
+  }
+
+  function closeBrowseScreen() {
+    document.removeEventListener('keydown', onBrowseScreenKeydown);
+    const playScreen = document.getElementById('play-screen');
+    playScreen.style.display = 'none';
+    playScreen.innerHTML = '';
+
+    linesEl.style.display = '';
+    linesEl.innerHTML = '';
+
+    // FIX: reset menu state so keyboard navigation works again on re-render
+    menuActive = false;
+    selectedIndex = 0;
+
+    i = 0;
+    setTimeout(runScript, 100);
+  }
+
+  function updateItemFilter(query) {
+    if (query === "") {
+      const popularItems = currentDataset.filter(item => item.popular);
+      const newItems = currentDataset.filter(item => item.newRelease);
+      const regularItems = currentDataset.filter(item => !item.popular && !item.newRelease);
+      
+      filteredItems = [...popularItems, ...newItems, ...regularItems];
+      renderDualList(popularItems, newItems, regularItems);
+    } else {
+      filteredItems = currentDataset.filter(item => item.name.toLowerCase().includes(query));
+      renderSingleList(filteredItems);
+    }
+  }
+
+  function renderDualList(popular, newItems, indexOnly) {
+    const contentEl = document.getElementById('play-screen-content');
+    const headerTitle = (currentMode === "games") ? "-- Popular Hits --" : "-- Featured Software --";
+    
+    contentEl.innerHTML = `
+      <div class="section-title">${headerTitle}</div>
+      <div class="game-list" id="popular-list"></div>
+      <div class="section-title">-- New Releases --</div>
+      <div class="game-list" id="new-list"></div>
+      <div class="section-title">-- Index --</div>
+      <div class="game-list" id="all-list"></div>
+    `;
+
+    const popList = document.getElementById('popular-list');
+    const newList = document.getElementById('new-list');
+    const allList = document.getElementById('all-list');
+
+    let totalIdx = 0;
+    
+    popular.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
+      row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+      popList.appendChild(row);
+      totalIdx++;
+    });
+
+    newItems.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
+      row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+      newList.appendChild(row);
+      totalIdx++;
+    });
+
+    indexOnly.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
+      row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+      allList.appendChild(row);
+      totalIdx++;
+    });
+  }
+
+  function renderSingleList(list) {
+    const contentEl = document.getElementById('play-screen-content');
+    contentEl.innerHTML = `
+      <div class="section-title">-- Search Results --</div>
+      <div class="game-list" id="search-list"></div>
+    `;
+    const searchList = document.getElementById('search-list');
+
+    if (list.length === 0) {
+      searchList.innerHTML = `<div class="no-results">no items found</div>`;
+      return;
+    }
+
+    list.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'game-row' + (idx === itemSelectedIndex ? ' selected' : '');
+      row.textContent = (idx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+      searchList.appendChild(row);
+    });
+  }
+
+  function onItemSearchInput(e) {
+    const query = e.target.value.trim().toLowerCase();
+    itemSelectedIndex = 0;
+    updateItemFilter(query);
+  }
+
+  function launchAsset(item) {
+    if (!item || !item.url) return;
+
+    // Open a blank popup first (must be synchronous with user gesture to avoid blockers)
+    const popup = window.open('', '_blank', 'width=' + screen.width + ',height=' + screen.height);
+
+    if (!popup) {
+      // Popup was blocked — fall back to new tab
+      window.open(item.url, '_blank');
+      return;
+    }
+
+    // Fetch the game file and write it into the about:blank popup
+    fetch(item.url)
+      .then(res => {
+        if (!res.ok) throw new Error('fetch failed');
+        return res.text();
+      })
+      .then(html => {
+        popup.document.open();
+        popup.document.write(html);
+        popup.document.close();
+      })
+      .catch(() => {
+        // If fetch fails (e.g. file:// protocol), just navigate the popup directly
+        popup.location.href = item.url;
+      });
+  }
+
+  function onBrowseScreenKeydown(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeBrowseScreen();
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (filteredItems.length === 0) return;
+      itemSelectedIndex = (itemSelectedIndex + 1) % filteredItems.length;
+      updateItemFilter(document.getElementById('game-search').value.trim().toLowerCase());
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (filteredItems.length === 0) return;
+      itemSelectedIndex = (itemSelectedIndex - 1 + filteredItems.length) % filteredItems.length;
+      updateItemFilter(document.getElementById('game-search').value.trim().toLowerCase());
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const item = filteredItems[itemSelectedIndex];
+      if (item) {
+        launchAsset(item);
+      }
+    }
+  }
+
+
+
+  function renderMenu(container) {
+    container.innerHTML = '';
+    menuOptions.forEach((opt, idx) => {
+      const row = document.createElement('div');
+      row.className = 'menu-row' + (idx === selectedIndex ? ' selected' : '');
+      row.textContent = (idx === selectedIndex ? '  > ' : '    ') + opt.label;
+      container.appendChild(row);
+    });
+  }
+
+  function onMenuKeydown(e) {
+    if (!menuActive) return;
+    const menuEl = document.getElementById('menu-list');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = (selectedIndex + 1) % menuOptions.length;
+      renderMenu(menuEl);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = (selectedIndex - 1 + menuOptions.length) % menuOptions.length;
+      renderMenu(menuEl);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSelection(menuOptions[selectedIndex].action);
+    }
+  }
+
+  function typeLine(entry, onDone) {
+    if (entry.type === "menu") {
+      const wrap = document.createElement('div');
+      wrap.className = 'line shown';
+      wrap.id = 'menu-list';
+      linesEl.appendChild(wrap);
+      selectedIndex = 0;
+      renderMenu(wrap);
+      menuActive = true;
+      document.addEventListener('keydown', onMenuKeydown);
+      onDone();
+      return;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'line';
+    linesEl.appendChild(div);
+    requestAnimationFrame(() => div.classList.add('shown'));
+
+    if (!entry.text) {
+      div.innerHTML = '&nbsp;';
+      setTimeout(onDone, 80);
+      return;
+    }
+
+    let charIndex = 0;
+    const speed = 14;
+    function typeChar() {
+      if (charIndex <= entry.text.length) {
+        div.textContent = entry.text.slice(0, charIndex);
+        charIndex++;
+        setTimeout(typeChar, speed);
+      } else {
+        onDone();
+      }
+    }
+    typeChar();
+  }
+
+  function runScript() {
+    if (i >= script.length) return;
+    const entry = script[i];
+    i++;
+    const delay = entry.text === "" ? 60 : 0;
+    setTimeout(() => typeLine(entry, runScript), delay);
+  }
+
+  setTimeout(runScript, 350);
+  setTimeout(() => hintEl.classList.add('shown'), 600);
+</script>
+
+</body>
+</html>
