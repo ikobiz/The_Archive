@@ -1,0 +1,7 @@
+{
+  "name": "the-archive",
+  "version": "0.0.6",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
