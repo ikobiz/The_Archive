@@ -282,13 +282,13 @@
   const menuOptions = [
     { label: "Run Games", action: "play" },
     { label: "Run Software", action: "run" },
-    { label: "Download The Archive Online", action: "download" },
-    { label: "about", action: "about" },
-    { label: "exit", action: "exit" }
+    { label: "Download TEO", action: "download" },
+    { label: "About", action: "about" },
+    { label: "Exit", action: "exit" }
   ];
 
   const script = [
-    { text: "SYSTEM BOOT // The Archive TERMINAL v0.4" },
+    { text: "SYSTEM BOOT // The Archive TERMINAL v0.6.8" },
     { text: "" },
     { text: "initializing display .......... OK" },
     { text: "loading archive index ......... OK" },
@@ -349,11 +349,11 @@
         openBrowseScreen("tools");
         return;
       case "download":
-        response = "> downloading The Archive Online...";
-        downloadFile('The_Archive_Online.html', './The_Archive_Online.html');
+        response = "> Downloading The Archive Online SingleFile...";
+        downloadFile('The_Archive_Online.html', './tool-assets/The_Archive_Online.html');
         break;
       case "about":
-        response = "> A library of archived games and small programs, including but not limited to, Ported Software, Ported MS-DOS games, UGS Games. All of it is made so that it can be run offline, once the offline copy was downloaded. The archive can run on my computer, chromebook, or other devices that can run a modern web browser, like chrome. It was built by an anonymous developer. This version of The Archive was updated in 6/24/2026, and is version 0.0.6.1";
+        response = "> A library of archived games and small programs, including but not limited to, Ported Software, Ported MS-DOS games, UGS Games. All of it is made so that it can be run offline, once the offline copy was downloaded. The archive can run on my computer, chromebook, or other devices that can run a modern web browser, like chrome. It was built by an anonymous developer. This version of The Archive was updated in 6/26/2026, and is version 0.0.6.8";
         break;
       case "exit":
         response = "> goodbye.";
