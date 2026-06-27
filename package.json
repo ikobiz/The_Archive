@@ -1,6 +1,6 @@
 {
   "name": "the-archive",
-  "version": "0.0.6",
+  "version": "0.0.6.3",
   "scripts": {
     "start": "node server.js"
   }
