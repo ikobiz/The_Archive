@@ -237,7 +237,7 @@
     { name: "2048", url: "game-assets/2048.html", popular: false, newRelease: false },
     { name: "drivemad", url: "game-assets/DM.html", popular: true, newRelease: false },
     { name: "driftboss", url: "game-assets/DB.html", popular: true, newRelease: false },
-    { name: "minesweeper", url: "game-assets/minesweeper.html", popular: false, newRelease: false },
+    //{ name: "minesweeper", url: "game-assets/minesweeper.html", popular: false, newRelease: false },
     { name: "escaperoad2", url: "game-assets/ER2.html", popular: true, newRelease: false },
     { name: "escaperoad3", url: "game-assets/ER3.html", popular: true, newRelease: false },
     { name: "driveinrussia", url: "game-assets/DR.html", popular: false, newRelease: false },
@@ -257,21 +257,21 @@
     { name: "Minecraft - v1.8.8", url: "game-assets/MC1.8.html", popular: true, newRelease: true },
     { name: "Gran Turismo 2", url: "game-assets/GT2.html", popular: false, newRelease: false },
     { name: "Gran Turismo", url: "game-assets/GT1.html", popular: false, newRelease: false },
-    { name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: false, newRelease: false },
-    { name: "Grand Theft Auto 2", url: "game-assets/GTA2.html", popular: false, newRelease: false },
-    { name: "Doom", url: "game-assets/DM1.html", popular: false, newRelease: false },
-    { name: "Quake", url: "game-assets/QK.html", popular: false, newRelease: false },
+    //{ name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: false, newRelease: false },
+    //{ name: "Grand Theft Auto 2", url: "game-assets/GTA2.html", popular: false, newRelease: false },
+    //{ name: "Doom", url: "game-assets/DM1.html", popular: false, newRelease: false },
+    //{ name: "Quake", url: "game-assets/QK.html", popular: false, newRelease: false },
     { name: "Oregon Trail", url: "game-assets/OT.html", popular: false, newRelease: false },
-    { name: "Half-Life", url: "game-assets/HL.html", popular: true, newRelease: false },
+    //{ name: "Half-Life", url: "game-assets/HL.html", popular: true, newRelease: false },
     { name: "Hill Climb Racing", url: "game-assets/HCR.html", popular: false, newRelease: false },
     { name: "Highway Racer", url: "game-assets/HR.html", popular: false, newRelease: false },
     { name: "Highway Racer 2", url: "game-assets/HR2.html", popular: false, newRelease: false },
     { name: "Crossy Road", url: "game-assets/CR.html", popular: true, newRelease: false },
     { name: "Cut the rope", url: "game-assets/CTR.html", popular: false, newRelease: false },
     { name: "Temple Run 2", url: "game-assets/TR2.html", popular: false, newRelease: false },
-    { name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false },
+    //{ name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false },
     { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false },
-    { name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false },
+    //{ name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false },
     { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false }
   ].filter(g => g.name && g.url); // FIX: guard against blank entries
 
@@ -280,9 +280,9 @@
   ].filter(t => t.name && t.url); // FIX: guard against blank entries
 
   const menuOptions = [
-    { label: "Run Games", action: "play" },
-    { label: "Run Software", action: "run" },
-    { label: "Download The Archive", action: "download" },
+    { label: "Games", action: "play" },
+    { label: "Software", action: "run" },
+    { label: "Download", action: "download" },
     { label: "About", action: "about" },
     { label: "Exit", action: "exit" }
   ];
