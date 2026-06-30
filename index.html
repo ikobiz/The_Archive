@@ -213,6 +213,105 @@
     opacity: 0.5;
   }
 
+  /* ---- antiHD PIN screen ---- */
+  :root {
+    --error: #ff4444;
+  }
+
+  .pin-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4em;
+  }
+
+  .pin-label {
+    font-size: 0.9em;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .pin-dots {
+    display: flex;
+    gap: 0.8em;
+  }
+
+  .pin-dot {
+    width: 1.4em;
+    height: 1.8em;
+    border: 1px solid var(--fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(16px, 2vw, 22px);
+    opacity: 0.45;
+    position: relative;
+  }
+
+  .pin-dot.filled {
+    opacity: 1;
+    background: rgba(0, 255, 0, 0.08);
+  }
+
+  .pin-dot.filled::after {
+    content: "•";
+    text-shadow: 0 0 4px var(--fg);
+  }
+
+  .pin-dot.active {
+    opacity: 1;
+    border-color: var(--fg);
+    box-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+  }
+
+  .pin-dot.active::after {
+    content: "";
+    width: 0.5em;
+    height: 1.1em;
+    background: var(--fg);
+    box-shadow: 0 0 4px var(--fg);
+    animation: pin-caret-blink 1s step-end infinite;
+  }
+
+  @keyframes pin-caret-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .pin-dots.error .pin-dot {
+    border-color: var(--error);
+    color: var(--error);
+  }
+
+  .pin-dots.error .pin-dot.filled::after {
+    color: var(--error);
+    text-shadow: 0 0 4px var(--error);
+  }
+
+  .pin-dots.shake {
+    animation: pin-shake 0.4s ease;
+  }
+
+  @keyframes pin-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(7px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(3px); }
+  }
+
+  .pin-message {
+    font-size: 0.85em;
+    min-height: 1.2em;
+    opacity: 0.8;
+  }
+
+  .pin-message.error {
+    color: var(--error);
+    text-shadow: 0 0 4px var(--error);
+    opacity: 1;
+  }
+
 
 </style>
 </head>
@@ -277,8 +376,11 @@
   ].filter(g => g.name && g.url); // FIX: guard against blank entries
 
   const tools = [
-    { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true, hidden: false }
+    { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true, hidden: false },
+    { name: "antiHD", url: "#", popular: false, newRelease: false, hidden: false, special: "antihd" }
   ].filter(t => t.name && t.url); // FIX: guard against blank entries
+
+  const ANTIHD_PIN = "6797";
 
   const menuOptions = [
     { label: "Games", action: "play" },
@@ -382,10 +484,10 @@
   let itemSelectedIndex = 0;
   let currentMode = "games"; // "games" or "tools"
 
-  function openBrowseScreen(mode) {
+  function openBrowseScreen(mode, showHidden = false) {
     currentMode = mode;
-    // FIX: exclude hidden entries instead of requiring them to be commented out
-    currentDataset = ((mode === "games") ? games : tools).filter(item => !item.hidden);
+    // FIX: exclude hidden entries unless explicitly told to show them (antiHD unlock)
+    currentDataset = ((mode === "games") ? games : tools).filter(item => showHidden || !item.hidden);
 
     linesEl.innerHTML = '';
     linesEl.style.display = 'none';
@@ -579,8 +681,109 @@
       e.preventDefault();
       const item = filteredItems[itemSelectedIndex];
       if (item) {
-        launchAsset(item);
+        if (item.special === 'antihd') {
+          document.removeEventListener('keydown', onBrowseScreenKeydown);
+          openPinScreen();
+        } else {
+          launchAsset(item);
+        }
       }
+    }
+  }
+
+  // ---- antiHD PIN gate ----
+  let pinBuffer = '';
+
+  function openPinScreen() {
+    pinBuffer = '';
+    const playScreen = document.getElementById('play-screen');
+    playScreen.innerHTML = `
+      <div class="pin-screen">
+        <div class="pin-label">antiHD // enter access pin</div>
+        <div class="pin-dots" id="pin-dots"></div>
+        <div id="pin-message" class="pin-message">&nbsp;</div>
+      </div>
+      <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ ESC: cancel | ENTER: submit ]</div>
+    `;
+    renderPinDots();
+    document.addEventListener('keydown', onPinScreenKeydown);
+  }
+
+  function renderPinDots() {
+    const dotsEl = document.getElementById('pin-dots');
+    if (!dotsEl) return;
+    dotsEl.innerHTML = '';
+    for (let pos = 0; pos < ANTIHD_PIN.length; pos++) {
+      const dot = document.createElement('div');
+      dot.className = 'pin-dot';
+      if (pos < pinBuffer.length) {
+        dot.classList.add('filled');
+      } else if (pos === pinBuffer.length) {
+        dot.classList.add('active');
+      }
+      dotsEl.appendChild(dot);
+    }
+  }
+
+  function showPinError() {
+    const dotsEl = document.getElementById('pin-dots');
+    const msg = document.getElementById('pin-message');
+    if (msg) {
+      msg.textContent = '> access denied.';
+      msg.classList.add('error');
+    }
+    if (dotsEl) {
+      dotsEl.classList.add('error', 'shake');
+      setTimeout(() => {
+        dotsEl.classList.remove('shake');
+      }, 400);
+    }
+  }
+
+  function clearPinError() {
+    const dotsEl = document.getElementById('pin-dots');
+    const msg = document.getElementById('pin-message');
+    if (msg) {
+      msg.textContent = '\u00a0';
+      msg.classList.remove('error');
+    }
+    if (dotsEl) dotsEl.classList.remove('error');
+  }
+
+  function onPinScreenKeydown(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      document.removeEventListener('keydown', onPinScreenKeydown);
+      closeBrowseScreen();
+      return;
+    }
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      if (pinBuffer.length > 0) {
+        pinBuffer = pinBuffer.slice(0, -1);
+        clearPinError();
+        renderPinDots();
+      }
+      return;
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (pinBuffer.length === 0) return;
+      if (pinBuffer === ANTIHD_PIN) {
+        document.removeEventListener('keydown', onPinScreenKeydown);
+        openBrowseScreen('games', true);
+      } else {
+        showPinError();
+        pinBuffer = '';
+        renderPinDots();
+      }
+      return;
+    }
+    if (/^[0-9]$/.test(e.key) && pinBuffer.length < ANTIHD_PIN.length) {
+      e.preventDefault();
+      clearPinError();
+      pinBuffer += e.key;
+      renderPinDots();
     }
   }
 
