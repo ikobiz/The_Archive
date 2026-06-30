@@ -231,52 +231,53 @@
 <script>
   // =========================================================================
   // EDIT YOUR ARRAYS HERE
+  // To hide an entry from the menu without deleting it, set hidden: true
   // =========================================================================
   const games = [
-    { name: "doodlejump", url: "game-assets/DJ.html", popular: false, newRelease: false },
-    { name: "2048", url: "game-assets/2048.html", popular: false, newRelease: false },
-    { name: "drivemad", url: "game-assets/DM.html", popular: true, newRelease: false },
-    { name: "driftboss", url: "game-assets/DB.html", popular: true, newRelease: false },
-    //{ name: "minesweeper", url: "game-assets/minesweeper.html", popular: false, newRelease: false },
-    { name: "escaperoad2", url: "game-assets/ER2.html", popular: true, newRelease: false },
-    { name: "escaperoad3", url: "game-assets/ER3.html", popular: true, newRelease: false },
-    { name: "driveinrussia", url: "game-assets/DR.html", popular: false, newRelease: false },
-    { name: "escaperoad", url: "game-assets/ER1.html", popular: false, newRelease: false },
-    { name: "baldisbasics", url: "game-assets/BB.html", popular: false, newRelease: false },
-    { name: "baseballbros", url: "game-assets/BB2.html", popular: true, newRelease: false },
-    { name: "Subway Surfers", url: "game-assets/SS.html", popular: true , newRelease: false },
-    { name: "Car King Arena", url: "game-assets/CKA.html", popular: true, newRelease: false },
-    { name: "Smashkarts", url: "game-assets/SK.html", popular: true, newRelease: false },
-    { name: "Minecraft - Lunar Client", url: "game-assets/LC.html", popular: false, newRelease: true },
-    { name: "Minecraft - Badlion Client", url: "game-assets/BLC.html", popular: false, newRelease: true },
-    { name: "Minecraft - Labymod Client", url: "game-assets/LMC.html", popular: false, newRelease: true },
-    { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: true },
-    { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: true },
-    { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: true },
-    { name: "Minecraft - v1.12.2", url: "game-assets/MC1.12.html", popular: true, newRelease: true },
-    { name: "Minecraft - v1.8.8", url: "game-assets/MC1.8.html", popular: true, newRelease: true },
-    { name: "Gran Turismo 2", url: "game-assets/GT2.html", popular: false, newRelease: false },
-    { name: "Gran Turismo", url: "game-assets/GT1.html", popular: false, newRelease: false },
-    //{ name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: false, newRelease: false },
-    //{ name: "Grand Theft Auto 2", url: "game-assets/GTA2.html", popular: false, newRelease: false },
-    //{ name: "Doom", url: "game-assets/DM1.html", popular: false, newRelease: false },
-    //{ name: "Quake", url: "game-assets/QK.html", popular: false, newRelease: false },
-    { name: "Oregon Trail", url: "game-assets/OT.html", popular: false, newRelease: false },
-    //{ name: "Half-Life", url: "game-assets/HL.html", popular: true, newRelease: false },
-    { name: "Hill Climb Racing", url: "game-assets/HCR.html", popular: false, newRelease: false },
-    { name: "Highway Racer", url: "game-assets/HR.html", popular: false, newRelease: false },
-    { name: "Highway Racer 2", url: "game-assets/HR2.html", popular: false, newRelease: false },
-    { name: "Crossy Road", url: "game-assets/CR.html", popular: true, newRelease: false },
-    { name: "Cut the rope", url: "game-assets/CTR.html", popular: false, newRelease: false },
-    { name: "Temple Run 2", url: "game-assets/TR2.html", popular: false, newRelease: false },
-    //{ name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false },
-    { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false },
-    //{ name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false },
-    { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false }
+    { name: "doodlejump", url: "game-assets/DJ.html", popular: false, newRelease: false, hidden: false },
+    { name: "2048", url: "game-assets/2048.html", popular: false, newRelease: false, hidden: false },
+    { name: "drivemad", url: "game-assets/DM.html", popular: true, newRelease: false, hidden: false },
+    { name: "driftboss", url: "game-assets/DB.html", popular: true, newRelease: false, hidden: false },
+    { name: "minesweeper", url: "game-assets/minesweeper.html", popular: false, newRelease: false, hidden: true },
+    { name: "escaperoad2", url: "game-assets/ER2.html", popular: true, newRelease: false, hidden: false },
+    { name: "escaperoad3", url: "game-assets/ER3.html", popular: true, newRelease: false, hidden: false },
+    { name: "driveinrussia", url: "game-assets/DR.html", popular: false, newRelease: false, hidden: false },
+    { name: "escaperoad", url: "game-assets/ER1.html", popular: false, newRelease: false, hidden: false },
+    { name: "baldisbasics", url: "game-assets/BB.html", popular: false, newRelease: false, hidden: false },
+    { name: "baseballbros", url: "game-assets/BB2.html", popular: true, newRelease: false, hidden: false },
+    { name: "Subway Surfers", url: "game-assets/SS.html", popular: true, newRelease: false, hidden: false },
+    { name: "Car King Arena", url: "game-assets/CKA.html", popular: true, newRelease: false, hidden: false },
+    { name: "Smashkarts", url: "game-assets/SK.html", popular: true, newRelease: false, hidden: false },
+    { name: "Minecraft - Lunar Client", url: "game-assets/LC.html", popular: false, newRelease: true, hidden: false },
+    { name: "Minecraft - Badlion Client", url: "game-assets/BLC.html", popular: false, newRelease: true, hidden: false },
+    { name: "Minecraft - Labymod Client", url: "game-assets/LMC.html", popular: false, newRelease: true, hidden: false },
+    { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: true, hidden: false },
+    { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: true, hidden: false },
+    { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: true, hidden: false },
+    { name: "Minecraft - v1.12.2", url: "game-assets/MC1.12.html", popular: true, newRelease: true, hidden: false },
+    { name: "Minecraft - v1.8.8", url: "game-assets/MC1.8.html", popular: true, newRelease: true, hidden: false },
+    { name: "Gran Turismo 2", url: "game-assets/GT2.html", popular: false, newRelease: false, hidden: false },
+    { name: "Gran Turismo", url: "game-assets/GT1.html", popular: false, newRelease: false, hidden: false },
+    { name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: false, newRelease: false, hidden: true },
+    { name: "Grand Theft Auto 2", url: "game-assets/GTA2.html", popular: false, newRelease: false, hidden: true },
+    { name: "Doom", url: "game-assets/DM1.html", popular: false, newRelease: false, hidden: true },
+    { name: "Quake", url: "game-assets/QK.html", popular: false, newRelease: false, hidden: true },
+    { name: "Oregon Trail", url: "game-assets/OT.html", popular: false, newRelease: false, hidden: false },
+    { name: "Half-Life", url: "game-assets/HL.html", popular: true, newRelease: false, hidden: true },
+    { name: "Hill Climb Racing", url: "game-assets/HCR.html", popular: false, newRelease: false, hidden: false },
+    { name: "Highway Racer", url: "game-assets/HR.html", popular: false, newRelease: false, hidden: false },
+    { name: "Highway Racer 2", url: "game-assets/HR2.html", popular: false, newRelease: false, hidden: false },
+    { name: "Crossy Road", url: "game-assets/CR.html", popular: true, newRelease: false, hidden: false },
+    { name: "Cut the rope", url: "game-assets/CTR.html", popular: false, newRelease: false, hidden: false },
+    { name: "Temple Run 2", url: "game-assets/TR2.html", popular: false, newRelease: false, hidden: false },
+    { name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false, hidden: true },
+    { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false, hidden: false },
+    { name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false, hidden: true },
+    { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false, hidden: false }
   ].filter(g => g.name && g.url); // FIX: guard against blank entries
 
   const tools = [
-    { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true }
+    { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true, hidden: false }
   ].filter(t => t.name && t.url); // FIX: guard against blank entries
 
   const menuOptions = [
@@ -383,7 +384,8 @@
 
   function openBrowseScreen(mode) {
     currentMode = mode;
-    currentDataset = (mode === "games") ? games : tools;
+    // FIX: exclude hidden entries instead of requiring them to be commented out
+    currentDataset = ((mode === "games") ? games : tools).filter(item => !item.hidden);
 
     linesEl.innerHTML = '';
     linesEl.style.display = 'none';
@@ -571,7 +573,6 @@
       updateItemFilter(document.getElementById('game-search').value.trim().toLowerCase());
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (filteredItems.length === 0) return;
       itemSelectedIndex = (itemSelectedIndex - 1 + filteredItems.length) % filteredItems.length;
       updateItemFilter(document.getElementById('game-search').value.trim().toLowerCase());
     } else if (e.key === 'Enter') {
