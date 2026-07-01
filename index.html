@@ -500,7 +500,7 @@
         <input type="text" id="game-search" autocomplete="off" spellcheck="false" placeholder="type to filter..." />
       </div>
       <div id="play-screen-content"></div>
-      <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ ESC: main menu | ENTER: launch ]</div>
+      <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ BACKSPACE: back | ESC: back (exits fullscreen) | ENTER: launch ]</div>
     `;
 
     const searchInput = document.getElementById('game-search');
@@ -668,6 +668,19 @@
       return;
     }
 
+    if (e.key === 'Backspace') {
+      // FIX: Backspace acts as "go back" without exiting fullscreen (unlike Escape,
+      // which browsers always intercept to exit fullscreen — that can't be prevented).
+      // Only trigger "back" when the search box is empty, so normal text deletion
+      // while typing a search query still works as expected.
+      const searchInput = document.getElementById('game-search');
+      if (!searchInput || searchInput.value === '') {
+        e.preventDefault();
+        closeBrowseScreen();
+      }
+      return;
+    }
+
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (filteredItems.length === 0) return;
@@ -703,7 +716,7 @@
         <div class="pin-dots" id="pin-dots"></div>
         <div id="pin-message" class="pin-message">&nbsp;</div>
       </div>
-      <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ ESC: cancel | ENTER: submit ]</div>
+      <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ BACKSPACE (empty): back | ESC: back (exits fullscreen) | ENTER: submit ]</div>
     `;
     renderPinDots();
     document.addEventListener('keydown', onPinScreenKeydown);
@@ -763,6 +776,11 @@
         pinBuffer = pinBuffer.slice(0, -1);
         clearPinError();
         renderPinDots();
+      } else {
+        // FIX: Backspace on an empty buffer acts as "go back" without exiting
+        // fullscreen (Escape always exits fullscreen at the browser level).
+        document.removeEventListener('keydown', onPinScreenKeydown);
+        closeBrowseScreen();
       }
       return;
     }
