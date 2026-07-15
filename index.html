@@ -316,7 +316,6 @@
 </style>
 </head>
 <body>
-
 <div class="crt">
   <div class="terminal">
     <div class="lines" id="lines"></div>
@@ -324,14 +323,7 @@
   </div>
   <div class="hint" id="hint">[ press any key to enter fullscreen ]</div>
 </div>
-
-
-
 <script>
-  // =========================================================================
-  // EDIT YOUR ARRAYS HERE
-  // To hide an entry from the menu without deleting it, set hidden: true
-  // =========================================================================
   const games = [
     { name: "doodlejump", url: "game-assets/DJ.html", popular: false, newRelease: false, hidden: false },
     { name: "2048", url: "game-assets/2048.html", popular: false, newRelease: false, hidden: false },
@@ -347,9 +339,6 @@
     { name: "Subway Surfers", url: "game-assets/SS.html", popular: true, newRelease: false, hidden: false },
     { name: "Car King Arena", url: "game-assets/CKA.html", popular: true, newRelease: false, hidden: false },
     { name: "Smashkarts", url: "game-assets/SK.html", popular: true, newRelease: false, hidden: false },
-    { name: "Minecraft - Lunar Client", url: "game-assets/LC.html", popular: false, newRelease: true, hidden: false },
-    { name: "Minecraft - Badlion Client", url: "game-assets/BLC.html", popular: false, newRelease: true, hidden: false },
-    { name: "Minecraft - Labymod Client", url: "game-assets/LMC.html", popular: false, newRelease: true, hidden: false },
     { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: true, hidden: false },
     { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: true, hidden: false },
     { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: true, hidden: false },
@@ -373,12 +362,13 @@
     { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false, hidden: false },
     { name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false, hidden: true },
     { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false, hidden: false }
-  ].filter(g => g.name && g.url); // FIX: guard against blank entries
+  ].filter(g => g.name && g.url);
 
   const tools = [
     { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true, hidden: false },
-    { name: "antiHD", url: "#", popular: false, newRelease: false, hidden: false, special: "antihd" }
-  ].filter(t => t.name && t.url); // FIX: guard against blank entries
+    { name: "antiHD", url: "#", popular: false, newRelease: false, hidden: false, special: "antihd" },
+    { name: "AWA", url: "#", popular: true, newRelease: false, hidden: false, special: "download" }
+  ].filter(t => t.name && t.url);
 
   const ANTIHD_PIN = "6797";
 
@@ -391,13 +381,13 @@
   ];
 
   const script = [
-    { text: "SYSTEM BOOT // The Archive TERMINAL v0.7.2" },
+    { text: "SYSTEM BOOT // The ArchIve v0.7.4" },
     { text: "" },
     { text: "initializing display .......... OK" },
     { text: "loading archive index ......... OK" },
     { text: "mounting /games /tools ......... OK" },
     { text: "" },
-    { text: "welcome." },
+    { text: "welcome to the ArchIve " },
     { text: "" },
     { text: "select an option:" },
     { text: "" },
@@ -453,10 +443,10 @@
         return;
       case "download":
         response = "> Downloading The Archive Online SingleFile...";
-        downloadFile('The_Archive_Online.html', './tool-assets/The_Archive_Online.html');
+        downloadFile('The_Archive_Online.html', './tool-assets/TAO.html');
         break;
       case "about":
-        response = "> A library of archived games and small programs, including but not limited to, Ported Software, Ported MS-DOS games, UGS Games. All of it is made so that it can be run offline, once the offline copy was downloaded. The archive can run on my computer, chromebook, or other devices that can run a modern web browser, like chrome. It was built by an anonymous developer. This version of The Archive was updated in 6/30/2026, and is version 0.0.7.2";
+        response = "> A library of archived games and programs, including but not limited to, Ported Software, Ported MS-DOS games, UGS Games. It was made and is maintained by an anonimus Developer. Some of the games, software, may be pirated or stolen. Use the software at your own risk.";
         break;
       case "exit":
         response = "> goodbye.";
