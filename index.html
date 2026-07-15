@@ -128,7 +128,6 @@
 
   .hint.shown { opacity: 0.6; }
 
-  /* ---- Play/Run screens ---- */
   .play-screen {
     display: flex;
     flex-direction: column;
@@ -213,7 +212,6 @@
     opacity: 0.5;
   }
 
-  /* ---- antiHD PIN screen ---- */
   :root {
     --error: #ff4444;
   }
@@ -339,11 +337,11 @@
     { name: "Subway Surfers", url: "game-assets/SS.html", popular: true, newRelease: false, hidden: false },
     { name: "Car King Arena", url: "game-assets/CKA.html", popular: true, newRelease: false, hidden: false },
     { name: "Smashkarts", url: "game-assets/SK.html", popular: true, newRelease: false, hidden: false },
-    { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: true, hidden: false },
-    { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: true, hidden: false },
-    { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: true, hidden: false },
-    { name: "Minecraft - v1.12.2", url: "game-assets/MC1.12.html", popular: true, newRelease: true, hidden: false },
-    { name: "Minecraft - v1.8.8", url: "game-assets/MC1.8.html", popular: true, newRelease: true, hidden: false },
+    { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: false, hidden: false },
+    { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: false, hidden: false },
+    { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: false, hidden: false },
+    { name: "Minecraft - v1.12.2", url: "game-assets/MC1.12.html", popular: true, newRelease: false, hidden: false },
+    { name: "Minecraft - v1.8.8", url: "game-assets/MC1.8.html", popular: false, newRelease: false, hidden: false },
     { name: "Gran Turismo 2", url: "game-assets/GT2.html", popular: false, newRelease: false, hidden: false },
     { name: "Gran Turismo", url: "game-assets/GT1.html", popular: false, newRelease: false, hidden: false },
     { name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: false, newRelease: false, hidden: true },
@@ -361,7 +359,12 @@
     { name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false, hidden: true },
     { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false, hidden: false },
     { name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false, hidden: true },
-    { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false, hidden: false }
+    { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false, hidden: false },
+    { name: "Paper.io", url: "game-assets/PIO.html", popular: false, newRelease: true, hidden: false },
+    { name: "Paper.io 3D", url: "game-assets/PIO3D.html", popular: false, newRelease: true, hidden: false },
+    { name: "Parking Fury", url: "game-assets/PF.html", popular: false, newRelease: true, hidden: false },
+    { name: "Parking Fury 2", url: "game-assets/PF2.html", popular: false, newRelease: true, hidden: false },
+    { name: "Parking Fury 3", url: "game-assets/PF3.html", popular: false, newRelease: true, hidden: false }
   ].filter(g => g.name && g.url);
 
   const tools = [
@@ -693,10 +696,6 @@
     }
 
     if (e.key === 'Backspace') {
-      // FIX: Backspace acts as "go back" without exiting fullscreen (unlike Escape,
-      // which browsers always intercept to exit fullscreen — that can't be prevented).
-      // Only trigger "back" when the search box is empty, so normal text deletion
-      // while typing a search query still works as expected.
       const searchInput = document.getElementById('game-search');
       if (!searchInput || searchInput.value === '') {
         e.preventDefault();
