@@ -1,662 +1,907 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Archive</title>
-<style>
-  @font-face {
-    font-family: 'Cascadia Code';
-    src: local('Cascadia Code'), local('Cascadia Mono');
-  }
-
-  :root {
-    --bg: #000000;
-    --fg: #00FF00;
-    --scanline: rgba(0, 0, 0, 0.18);
-    --error: #ff4444;
-  }
-
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #050505;
-  }
-
-  body {
-    font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SF Mono', Menlo, 'Courier New', monospace;
-    font-variant-ligatures: none;
-    cursor: default;
-  }
-
-  /* ============ CRT TUBE CONTAINER ============ */
-  /* Slight inset + rounded corners fakes the physical tube bezel */
-  .crt {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    overflow: hidden;
-    border-radius: 18px;
-    box-shadow:
-      inset 0 0 8px 2px rgba(0, 0, 0, 0.9),
-      inset 0 0 140px 40px rgba(0, 0, 0, 0.85);
-    animation: powerOn 1.1s ease-out;
-  }
-
-  /* Screen "power on" flash/collapse, sold as a bright horizontal line expanding */
-  @keyframes powerOn {
-    0% { filter: brightness(3) contrast(0.3); transform: scaleY(0.005); }
-    4% { transform: scaleY(0.005); }
-    12% { transform: scaleY(1); filter: brightness(3.5); }
-    35% { filter: brightness(1); }
-    100% { filter: brightness(1); transform: scaleY(1); }
-  }
-
-  /* Barrel-curvature illusion: darken toward the edges/corners */
-  .crt-vignette {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 5;
-    background:
-      radial-gradient(ellipse at center,
-        transparent 55%,
-        rgba(0, 0, 0, 0.25) 78%,
-        rgba(0, 0, 0, 0.75) 100%
-      );
-    mix-blend-mode: multiply;
-  }
-
-  /* Subtle top/bottom curvature shading, as if the glass bows */
-  .crt-curve {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 5;
-    background:
-      linear-gradient(to bottom,
-        rgba(0,0,0,0.35) 0%,
-        transparent 6%,
-        transparent 94%,
-        rgba(0,0,0,0.35) 100%
-      );
-  }
-
-  /* Scanlines */
-  .crt::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 1px,
-      var(--scanline) 2px,
-      var(--scanline) 3px
-    );
-    z-index: 3;
-    opacity: 0.5;
-  }
-
-  /* Flicker */
-  .crt::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 4;
-    animation: flicker 6s infinite;
-  }
-
-  @keyframes flicker {
-    0%, 96%, 100% { opacity: 1; }
-    97% { opacity: 0.94; }
-    98% { opacity: 1; }
-    99% { opacity: 0.97; }
-  }
-
-  /* Rolling scanline band — a soft bright bar drifting down the screen */
-  .crt-roll {
-    position: fixed;
-    left: 0;
-    right: 0;
-    height: 90px;
-    pointer-events: none;
-    z-index: 6;
-    background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      rgba(0, 255, 0, 0.035) 50%,
-      transparent 100%
-    );
-    animation: roll 9s linear infinite;
-    mix-blend-mode: screen;
-  }
-
-  @keyframes roll {
-    0% { top: -90px; }
-    100% { top: 100%; }
-  }
-
-  /* Static / grain noise texture */
-  .crt-noise {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 7;
-    opacity: 0.05;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-    background-size: 180px 180px;
-    animation: noiseShift 0.4s steps(4) infinite;
-  }
-
-  @keyframes noiseShift {
-    0% { transform: translate(0, 0); }
-    25% { transform: translate(-2%, 1%); }
-    50% { transform: translate(1%, -2%); }
-    75% { transform: translate(-1%, 2%); }
-    100% { transform: translate(0, 0); }
-  }
-
-  /* Whole-screen jitter — rare vertical sync hiccup */
-  .terminal-wrap {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    height: 100%;
-    animation: jitter 8s infinite;
-  }
-
-  @keyframes jitter {
-    0%, 99.2%, 100% { transform: translate(0, 0); }
-    99.3% { transform: translate(-2px, 1px); }
-    99.45% { transform: translate(2px, -1px); }
-    99.6% { transform: translate(-1px, 0); }
-    99.75% { transform: translate(1px, 1px); }
-  }
-
-  .terminal {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    padding: 4vh 4vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-  }
-
-  /* Base phosphor glow + a faint red/blue fringe offset = chromatic aberration */
-  .lines {
-    font-size: clamp(13px, 1.6vw, 19px);
-    line-height: 1.65;
-    color: var(--fg);
-    white-space: pre-wrap;
-    max-width: 900px;
-    text-shadow:
-      0 0 3px var(--fg),
-      0 0 10px rgba(0, 255, 0, 0.25),
-      -1px 0 rgba(255, 0, 60, 0.35),
-      1px 0 rgba(0, 120, 255, 0.35);
-  }
-
-  .line {
-    opacity: 0;
-    display: block;
-  }
-
-  .line.shown {
-    opacity: 1;
-  }
-
-  .menu-row {
-    white-space: pre;
-    text-shadow:
-      0 0 3px var(--fg),
-      -1px 0 rgba(255, 0, 60, 0.3),
-      1px 0 rgba(0, 120, 255, 0.3);
-  }
-
-  .menu-row.selected {
-    color: #000000;
-    background: var(--fg);
-    text-shadow: none;
-    box-shadow: 0 0 14px 2px rgba(0, 255, 0, 0.65);
-  }
-
-  .hint {
-    position: absolute;
-    bottom: 3vh;
-    left: 4vw;
-    font-size: clamp(10px, 1vw, 12px);
-    color: var(--fg);
-    opacity: 0;
-    transition: opacity 1s ease;
-    letter-spacing: 0.05em;
-    text-shadow: 0 0 3px var(--fg);
-  }
-
-  .hint.shown { opacity: 0.6; }
-
-  .play-screen {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    color: var(--fg);
-    text-shadow:
-      0 0 3px var(--fg),
-      -1px 0 rgba(255, 0, 60, 0.3),
-      1px 0 rgba(0, 120, 255, 0.3);
-    font-size: clamp(13px, 1.6vw, 19px);
-    height: 100%;
-    overflow: hidden;
-  }
-
-  #play-screen-content {
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-  }
-
-  #play-screen-content::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  #play-screen-content::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  #play-screen-content::-webkit-scrollbar-thumb {
-    background: var(--fg);
-    opacity: 0.4;
-  }
-
-  .search-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6ch;
-  }
-
-  #game-search {
-    flex: 1;
-    max-width: 500px;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--fg);
-    outline: none;
-    color: var(--fg);
-    font-family: inherit;
-    font-size: inherit;
-    caret-color: var(--fg);
-    padding: 0.2em 0;
-    text-shadow: 0 0 3px var(--fg);
-  }
-
-  #game-search::placeholder {
-    color: var(--fg);
-    opacity: 0.4;
-  }
-
-  .section-title {
-    font-size: 0.9em;
-    opacity: 0.7;
-    margin-top: 0.5em;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  .game-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3em;
-  }
-
-  .game-row {
-    white-space: pre;
-  }
-
-  .game-row.selected {
-    color: #000000;
-    background: var(--fg);
-    text-shadow: none;
-    box-shadow: 0 0 14px 2px rgba(0, 255, 0, 0.65);
-  }
-
-  .no-results {
-    opacity: 0.5;
-  }
-
-  .pin-screen {
-    display: flex;
-    flex-direction: column;
-    gap: 1.4em;
-  }
-
-  .pin-label {
-    font-size: 0.9em;
-    opacity: 0.7;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-  }
-
-  .pin-dots {
-    display: flex;
-    gap: 0.8em;
-  }
-
-  .pin-dot {
-    width: 1.4em;
-    height: 1.8em;
-    border: 1px solid var(--fg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: clamp(16px, 2vw, 22px);
-    opacity: 0.45;
-    position: relative;
-  }
-
-  .pin-dot.filled {
-    opacity: 1;
-    background: rgba(0, 255, 0, 0.08);
-  }
-
-  .pin-dot.filled::after {
-    content: "•";
-    text-shadow: 0 0 4px var(--fg);
-  }
-
-  .pin-dot.active {
-    opacity: 1;
-    border-color: var(--fg);
-    box-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
-  }
-
-  .pin-dot.active::after {
-    content: "";
-    width: 0.5em;
-    height: 1.1em;
-    background: var(--fg);
-    box-shadow: 0 0 4px var(--fg);
-    animation: pin-caret-blink 1s step-end infinite;
-  }
-
-  @keyframes pin-caret-blink {
-    0%, 49% { opacity: 1; }
-    50%, 100% { opacity: 0; }
-  }
-
-  .pin-dots.error .pin-dot {
-    border-color: var(--error);
-    color: var(--error);
-  }
-
-  .pin-dots.error .pin-dot.filled::after {
-    color: var(--error);
-    text-shadow: 0 0 4px var(--error);
-  }
-
-  .pin-dots.shake {
-    animation: pin-shake 0.4s ease;
-  }
-
-  @keyframes pin-shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-8px); }
-    40% { transform: translateX(7px); }
-    60% { transform: translateX(-5px); }
-    80% { transform: translateX(3px); }
-  }
-
-  .pin-message {
-    font-size: 0.85em;
-    min-height: 1.2em;
-    opacity: 0.8;
-  }
-
-  .pin-message.error {
-    color: var(--error);
-    text-shadow: 0 0 4px var(--error);
-    opacity: 1;
-  }
-
-</style>
-</head>
-<body>
-<div class="crt">
-  <div class="crt-roll"></div>
-  <div class="terminal-wrap">
-    <div class="terminal">
-      <div class="lines" id="lines"></div>
-      <div class="play-screen" id="play-screen" style="display:none;"></div>
-    </div>
-  </div>
-  <div class="crt-curve"></div>
-  <div class="crt-vignette"></div>
-  <div class="crt-noise"></div>
-  <div class="hint" id="hint">[ press any key to enter fullscreen ]</div>
-</div>
-<script>
-  const games = [
-    { name: "doodlejump", url: "game-assets/DJ.html", popular: false, newRelease: false, hidden: false },
-    { name: "2048", url: "game-assets/2048.html", popular: false, newRelease: false, hidden: false },
-    { name: "drivemad", url: "game-assets/DM.html", popular: true, newRelease: false, hidden: false },
-    { name: "driftboss", url: "game-assets/DB.html", popular: true, newRelease: false, hidden: false },
-    { name: "minesweeper", url: "game-assets/minesweeper.html", popular: false, newRelease: false, hidden: true },
-    { name: "escaperoad2", url: "game-assets/ER2.html", popular: true, newRelease: false, hidden: false },
-    { name: "escaperoad3", url: "game-assets/ER3.html", popular: true, newRelease: false, hidden: false },
-    { name: "driveinrussia", url: "game-assets/DR.html", popular: false, newRelease: false, hidden: false },
-    { name: "escaperoad", url: "game-assets/ER1.html", popular: false, newRelease: false, hidden: false },
-    { name: "baldisbasics", url: "game-assets/BB.html", popular: false, newRelease: false, hidden: false },
-    { name: "baseballbros", url: "game-assets/BB2.html", popular: true, newRelease: false, hidden: false },
-    { name: "Subway Surfers", url: "game-assets/SS.html", popular: true, newRelease: false, hidden: false },
-    { name: "Car King Arena", url: "game-assets/CKA.html", popular: true, newRelease: false, hidden: false },
-    { name: "Smashkarts", url: "game-assets/SK.html", popular: true, newRelease: false, hidden: false },
-    { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: false, hidden: false },
-    { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: false, hidden: false },
-    { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: false, hidden: false },
-    { name: "Minecraft - v1.12.2", url: "game-assets/MC1.12.html", popular: true, newRelease: false, hidden: false },
-    { name: "Minecraft - v1.8.8", url: "game-assets/MC1.8.html", popular: false, newRelease: false, hidden: false },
-    { name: "Gran Turismo 2", url: "game-assets/GT2.html", popular: false, newRelease: false, hidden: false },
-    { name: "Gran Turismo", url: "game-assets/GT1.html", popular: false, newRelease: false, hidden: false },
-    { name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: false, newRelease: false, hidden: true },
-    { name: "Grand Theft Auto 2", url: "game-assets/GTA2.html", popular: false, newRelease: false, hidden: true },
-    { name: "Doom", url: "game-assets/DM1.html", popular: false, newRelease: false, hidden: true },
-    { name: "Quake", url: "game-assets/QK.html", popular: false, newRelease: false, hidden: true },
-    { name: "Oregon Trail", url: "game-assets/OT.html", popular: false, newRelease: false, hidden: false },
-    { name: "Half-Life", url: "game-assets/HL.html", popular: true, newRelease: false, hidden: true },
-    { name: "Hill Climb Racing", url: "game-assets/HCR.html", popular: false, newRelease: false, hidden: false },
-    { name: "Highway Racer", url: "game-assets/HR.html", popular: false, newRelease: false, hidden: false },
-    { name: "Highway Racer 2", url: "game-assets/HR2.html", popular: false, newRelease: false, hidden: false },
-    { name: "Crossy Road", url: "game-assets/CR.html", popular: true, newRelease: false, hidden: false },
-    { name: "Cut the rope", url: "game-assets/CTR.html", popular: false, newRelease: false, hidden: false },
-    { name: "Temple Run 2", url: "game-assets/TR2.html", popular: false, newRelease: false, hidden: false },
-    { name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false, hidden: true },
-    { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false, hidden: false },
-    { name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false, hidden: true },
-    { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false, hidden: false },
-    { name: "Paper.io", url: "game-assets/PIO.html", popular: false, newRelease: true, hidden: false },
-    { name: "Paper.io 3D", url: "game-assets/PIO3D.html", popular: false, newRelease: true, hidden: false },
-    { name: "Parking Fury", url: "game-assets/PF.html", popular: false, newRelease: true, hidden: false },
-    { name: "Parking Fury 2", url: "game-assets/PF2.html", popular: false, newRelease: true, hidden: false },
-    { name: "Parking Fury 3", url: "game-assets/PF3.html", popular: false, newRelease: true, hidden: false }
-  ].filter(g => g.name && g.url);
-
-  const tools = [
-    { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true, hidden: false },
-    { name: "antiHD", url: "#", popular: false, newRelease: false, hidden: false, special: "antihd" },
-    { name: "AWA", url: "#", popular: true, newRelease: false, hidden: false, special: "download" }
-  ].filter(t => t.name && t.url);
-
-  const ANTIHD_PIN = "6797";
-
-  const menuOptions = [
-    { label: "Games", action: "play" },
-    { label: "Software", action: "run" },
-    { label: "Download", action: "download" },
-    { label: "About", action: "about" },
-    { label: "Exit", action: "exit" }
-  ];
-
-  const script = [
-    { text: "SYSTEM BOOT // The ArchIve v0.7.4" },
-    { text: "" },
-    { text: "initializing display .......... OK" },
-    { text: "loading archive index ......... OK" },
-    { text: "mounting /games /tools ......... OK" },
-    { text: "" },
-    { text: "welcome to the ArchIve " },
-    { text: "" },
-    { text: "select an option:" },
-    { text: "" },
-    { type: "menu" },
-    { text: "" },
-    { text: "use \u2191 \u2193 to choose, enter to select" }
-  ];
-
-  const linesEl = document.getElementById('lines');
-  const hintEl = document.getElementById('hint');
-
-  let i = 0;
-  let selectedIndex = 0;
-  let menuActive = false;
-  let fullscreenRequested = false;
-
-  function requestFullscreen() {
-    if (fullscreenRequested) return;
-    fullscreenRequested = true;
-    hintEl.classList.remove('shown');
-    const el = document.documentElement;
-    if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
-    } else if (el.webkitRequestFullscreen) {
-      el.webkitRequestFullscreen();
-    } else if (el.msRequestFullscreen) {
-      el.msRequestFullscreen();
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The ArchIve Portal</title>
+  <style>
+    @font-face {
+      font-family: 'Cascadia Code';
+      src: local('Cascadia Code'), local('Cascadia Mono');
     }
-  }
+    :root {
+      --bg: #000000;
+      --fg: #00FF00;
+      --scanline: rgba(0, 0, 0, 0.18);
+      --error: #ff4444;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #050505;
+    }
+    body {
+      font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SF Mono', Menlo, 'Courier New', monospace;
+      font-variant-ligatures: none;
+      cursor: default;
+    }
+    .crt {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      overflow: hidden;
+      border-radius: 18px;
+      box-shadow:
+        inset 0 0 8px 2px rgba(0, 0, 0, 0.9),
+        inset 0 0 140px 40px rgba(0, 0, 0, 0.85);
+      animation: powerOn 1.1s ease-out;
+    }
+    @keyframes powerOn {
+      0% { filter: brightness(3) contrast(0.3); transform: scaleY(0.005); }
+      4% { transform: scaleY(0.005); }
+      12% { transform: scaleY(1); filter: brightness(3.5); }
+      35% { filter: brightness(1); }
+      100% { filter: brightness(1); transform: scaleY(1); }
+    }
+    .crt-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      background:
+        radial-gradient(ellipse at center,
+          transparent 55%,
+          rgba(0, 0, 0, 0.25) 78%,
+          rgba(0, 0, 0, 0.75) 100%
+        );
+      mix-blend-mode: multiply;
+    }
+    .crt-curve {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      background:
+        linear-gradient(to bottom,
+          rgba(0,0,0,0.35) 0%,
+          transparent 6%,
+          transparent 94%,
+          rgba(0,0,0,0.35) 100%
+        );
+    }
+    .crt::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 1px,
+        var(--scanline) 2px,
+        var(--scanline) 3px
+      );
+      z-index: 3;
+      opacity: 0.5;
+    }
+    .crt::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4;
+      animation: flicker 6s infinite;
+    }
+    @keyframes flicker {
+      0%, 96%, 100% { opacity: 1; }
+      97% { opacity: 0.94; }
+      98% { opacity: 1; }
+      99% { opacity: 0.97; }
+    }
+    .crt-roll {
+      position: fixed;
+      left: 0;
+      right: 0;
+      height: 90px;
+      pointer-events: none;
+      z-index: 6;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 255, 0, 0.035) 50%,
+        transparent 100%
+      );
+      animation: roll 9s linear infinite;
+      mix-blend-mode: screen;
+    }
+    @keyframes roll {
+      0% { top: -90px; }
+      100% { top: 100%; }
+    }
+    .crt-noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 7;
+      opacity: 0.05;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+      background-size: 180px 180px;
+      animation: noiseShift 0.4s steps(4) infinite;
+    }
+    @keyframes noiseShift {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-2%, 1%); }
+      50% { transform: translate(1%, -2%); }
+      75% { transform: translate(-1%, 2%); }
+      100% { transform: translate(0, 0); }
+    }
+    .terminal-wrap {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      animation: jitter 8s infinite;
+    }
+    @keyframes jitter {
+      0%, 99.2%, 100% { transform: translate(0, 0); }
+      99.3% { transform: translate(-2px, 1px); }
+      99.45% { transform: translate(2px, -1px); }
+      99.6% { transform: translate(-1px, 0); }
+      99.75% { transform: translate(1px, 1px); }
+    }
+    .terminal {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 4vh 4vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .lines {
+      font-size: clamp(13px, 1.6vw, 19px);
+      line-height: 1.65;
+      color: var(--fg);
+      white-space: pre-wrap;
+      max-width: 900px;
+      text-shadow:
+        0 0 3px var(--fg),
+        0 0 10px rgba(0, 255, 0, 0.25),
+        -1px 0 rgba(255, 0, 60, 0.35),
+        1px 0 rgba(0, 120, 255, 0.35);
+    }
+    .line {
+      opacity: 0;
+      display: block;
+    }
+    .line.shown {
+      opacity: 1;
+    }
+    .menu-row {
+      white-space: pre;
+      text-shadow:
+        0 0 3px var(--fg),
+        -1px 0 rgba(255, 0, 60, 0.3),
+        1px 0 rgba(0, 120, 255, 0.3);
+    }
+    .menu-row.selected {
+      color: #000000;
+      background: var(--fg);
+      text-shadow: none;
+      box-shadow: 0 0 14px 2px rgba(0, 255, 0, 0.65);
+    }
+    .hint {
+      position: absolute;
+      bottom: 3vh;
+      left: 4vw;
+      font-size: clamp(10px, 1vw, 12px);
+      color: var(--fg);
+      opacity: 0;
+      transition: opacity 1s ease;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 3px var(--fg);
+    }
+    .hint.shown { opacity: 0.6; }
+    .play-screen {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      color: var(--fg);
+      text-shadow:
+        0 0 3px var(--fg),
+        -1px 0 rgba(255, 0, 60, 0.3),
+        1px 0 rgba(0, 120, 255, 0.3);
+      font-size: clamp(13px, 1.6vw, 19px);
+      height: 100%;
+      overflow: hidden;
+    }
+    #play-screen-content {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+    }
+    #play-screen-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    #play-screen-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #play-screen-content::-webkit-scrollbar-thumb {
+      background: var(--fg);
+      opacity: 0.4;
+    }
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6ch;
+    }
+    #game-search {
+      flex: 1;
+      max-width: 500px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--fg);
+      outline: none;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: inherit;
+      caret-color: var(--fg);
+      padding: 0.2em 0;
+      text-shadow: 0 0 3px var(--fg);
+    }
+    #game-search::placeholder {
+      color: var(--fg);
+      opacity: 0.4;
+    }
+    .section-title {
+      font-size: 0.9em;
+      opacity: 0.7;
+      margin-top: 0.5em;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .game-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3em;
+    }
+    .game-row {
+      white-space: pre;
+    }
+    .game-row.selected {
+      color: #000000;
+      background: var(--fg);
+      text-shadow: none;
+      box-shadow: 0 0 14px 2px rgba(0, 255, 0, 0.65);
+    }
+    .no-results {
+      opacity: 0.5;
+    }
+    .pin-screen {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4em;
+    }
+    .pin-label {
+      font-size: 0.9em;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .pin-dots {
+      display: flex;
+      gap: 0.8em;
+    }
+    .pin-dot {
+      width: 1.4em;
+      height: 1.8em;
+      border: 1px solid var(--fg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(16px, 2vw, 22px);
+      opacity: 0.45;
+      position: relative;
+    }
+    .pin-dot.filled {
+      opacity: 1;
+      background: rgba(0, 255, 0, 0.08);
+    }
+    .pin-dot.filled::after {
+      content: "•";
+      text-shadow: 0 0 4px var(--fg);
+    }
+    .pin-dot.active {
+      opacity: 1;
+      border-color: var(--fg);
+      box-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+    }
+    .pin-dot.active::after {
+      content: "";
+      width: 0.5em;
+      height: 1.1em;
+      background: var(--fg);
+      box-shadow: 0 0 4px var(--fg);
+      animation: pin-caret-blink 1s step-end infinite;
+    }
+    @keyframes pin-caret-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .pin-dots.error .pin-dot {
+      border-color: var(--error);
+      color: var(--error);
+    }
+    .pin-dots.error .pin-dot.filled::after {
+      color: var(--error);
+      text-shadow: 0 0 4px var(--error);
+    }
+    .pin-dots.shake {
+      animation: pin-shake 0.4s ease;
+    }
+    @keyframes pin-shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(3px); }
+    }
+    .pin-message {
+      font-size: 0.85em;
+      min-height: 1.2em;
+      opacity: 0.8;
+    }
+    .pin-message.error {
+      color: var(--error);
+      text-shadow: 0 0 4px var(--error);
+      opacity: 1;
+    }
+  </style>
+  </head>
+  <body>
+  <div class="crt">
+    <div class="crt-roll"></div>
+    <div class="terminal-wrap">
+      <div class="terminal">
+        <div class="lines" id="lines"></div>
+        <div class="play-screen" id="play-screen" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="crt-curve"></div>
+    <div class="crt-vignette"></div>
+    <div class="crt-noise"></div>
+    <div class="hint" id="hint">[ press any key to enter fullscreen ]</div>
+  </div>
+  <script>
+    const games = [
+      { name: "doodlejump", url: "game-assets/DJ.html", popular: false, newRelease: false, hidden: false },
+      { name: "2048", url: "game-assets/2048.html", popular: false, newRelease: false, hidden: false },
+      { name: "drivemad", url: "game-assets/DM.html", popular: true, newRelease: false, hidden: false },
+      { name: "driftboss", url: "game-assets/DB.html", popular: true, newRelease: false, hidden: false },
+      { name: "minesweeper", url: "game-assets/minesweeper.html", popular: false, newRelease: false, hidden: true },
+      { name: "escaperoad2", url: "game-assets/ER2.html", popular: true, newRelease: false, hidden: false },
+      { name: "escaperoad3", url: "game-assets/ER3.html", popular: true, newRelease: false, hidden: false },
+      { name: "driveinrussia", url: "game-assets/DR.html", popular: false, newRelease: false, hidden: false },
+      { name: "escaperoad", url: "game-assets/ER1.html", popular: false, newRelease: false, hidden: false },
+      { name: "baldisbasics", url: "game-assets/BB.html", popular: false, newRelease: false, hidden: false },
+      { name: "baseballbros", url: "game-assets/BB2.html", popular: true, newRelease: false, hidden: false },
+      { name: "Subway Surfers", url: "game-assets/SS.html", popular: true, newRelease: false, hidden: false },
+      { name: "Car King Arena", url: "game-assets/CKA.html", popular: true, newRelease: false, hidden: false },
+      { name: "Smashkarts", url: "game-assets/SK.html", popular: true, newRelease: false, hidden: false },
+      { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: false, hidden: false },
+      { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: false, hidden: false },
+      { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: false, hidden: false },
+      { name: "Minecraft - v1.12.2", url: "game-assets/MC1.12.html", popular: true, newRelease: false, hidden: false },
+      { name: "Minecraft - v1.8.8", url: "game-assets/MC1.8.html", popular: false, newRelease: false, hidden: false },
+      { name: "Gran Turismo 2", url: "game-assets/GT2.html", popular: false, newRelease: false, hidden: false },
+      { name: "Gran Turismo", url: "game-assets/GT1.html", popular: false, newRelease: false, hidden: false },
+      { name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: false, newRelease: false, hidden: true },
+      { name: "Grand Theft Auto 2", url: "game-assets/GTA2.html", popular: false, newRelease: false, hidden: true },
+      { name: "Doom", url: "game-assets/DM1.html", popular: false, newRelease: false, hidden: true },
+      { name: "Quake", url: "game-assets/QK.html", popular: false, newRelease: false, hidden: true },
+      { name: "Oregon Trail", url: "game-assets/OT.html", popular: false, newRelease: false, hidden: false },
+      { name: "Half-Life", url: "game-assets/HL.html", popular: true, newRelease: false, hidden: true },
+      { name: "Hill Climb Racing", url: "game-assets/HCR.html", popular: false, newRelease: false, hidden: false },
+      { name: "Highway Racer", url: "game-assets/HR.html", popular: false, newRelease: false, hidden: false },
+      { name: "Highway Racer 2", url: "game-assets/HR2.html", popular: false, newRelease: false, hidden: false },
+      { name: "Crossy Road", url: "game-assets/CR.html", popular: true, newRelease: false, hidden: false },
+      { name: "Cut the rope", url: "game-assets/CTR.html", popular: false, newRelease: false, hidden: false },
+      { name: "Temple Run 2", url: "game-assets/TR2.html", popular: false, newRelease: false, hidden: false },
+      { name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false, hidden: true },
+      { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false, hidden: false },
+      { name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false, hidden: true },
+      { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false, hidden: false },
+      { name: "Paper.io", url: "game-assets/PIO.html", popular: false, newRelease: true, hidden: false },
+      { name: "Paper.io 3D", url: "game-assets/PIO3D.html", popular: false, newRelease: true, hidden: false },
+      { name: "Parking Fury", url: "game-assets/PF.html", popular: false, newRelease: true, hidden: false },
+      { name: "Parking Fury 2", url: "game-assets/PF2.html", popular: false, newRelease: true, hidden: false },
+      { name: "Parking Fury 3", url: "game-assets/PF3.html", popular: false, newRelease: true, hidden: false }
+    ].filter(g => g.name && g.url);
 
-  document.addEventListener('keydown', requestFullscreen, { once: true });
-  document.addEventListener('click', requestFullscreen, { once: true });
+    const tools = [
+      { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true, hidden: false },
+      { name: "antiHD", url: "#", popular: false, newRelease: false, hidden: false, special: "antihd" },
+      { name: "Other Window", url: "#", popular: false, newRelease: false, hidden: false, special: "download" }
+    ].filter(t => t.name && t.url);
 
-  function handleSelection(action) {
-    menuActive = false;
-    document.removeEventListener('keydown', onMenuKeydown);
+    const ANTIHD_PIN = "6797";
 
-    const menuEl = document.getElementById('menu-list');
-    if (menuEl) {
-      [...menuEl.children].forEach((row, idx) => {
-        row.classList.remove('selected');
-        row.textContent = `    ${menuOptions[idx].label}`;
+    const menuOptions = [
+      { label: "Games", action: "play" },
+      { label: "Software", action: "run" },
+      { label: "Download", action: "download" },
+      { label: "About", action: "about" },
+      { label: "Exit", action: "exit" }
+    ];
+
+    const script = [
+      { text: "SYSTEM BOOT // The ArchIve v0.7.4" },
+      { text: "" },
+      { text: "initializing display .......... OK" },
+      { text: "loading archive index ......... OK" },
+      { text: "mounting /games /tools ......... OK" },
+      { text: "" },
+      { text: "welcome to the ArchIve Portal" },
+      { text: "" },
+      { text: "select an option:" },
+      { text: "" },
+      { type: "menu" },
+      { text: "" },
+      { text: "use \u2191 \u2193 to choose, enter to select" }
+    ];
+
+    const linesEl = document.getElementById('lines');
+    const hintEl = document.getElementById('hint');
+
+    let i = 0;
+    let selectedIndex = 0;
+    let menuActive = false;
+    let fullscreenRequested = false;
+
+    function requestFullscreen() {
+      if (fullscreenRequested) return;
+      fullscreenRequested = true;
+      hintEl.classList.remove('shown');
+      const el = document.documentElement;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      } else if (el.msRequestFullscreen) {
+        el.msRequestFullscreen();
+      }
+    }
+
+    document.addEventListener('keydown', requestFullscreen, { once: true });
+    document.addEventListener('click', requestFullscreen, { once: true });
+
+    function handleSelection(action) {
+      menuActive = false;
+      document.removeEventListener('keydown', onMenuKeydown);
+
+      const menuEl = document.getElementById('menu-list');
+      if (menuEl) {
+        [...menuEl.children].forEach((row, idx) => {
+          row.classList.remove('selected');
+          row.textContent = `    ${menuOptions[idx].label}`;
+        });
+      }
+
+      let response = "";
+      switch (action) {
+        case "play":
+          openBrowseScreen("games");
+          return;
+        case "run":
+          openBrowseScreen("tools");
+          return;
+        case "download":
+          response = "> Downloading The Archive Online SingleFile...";
+          downloadFile('The_Archive_Online.html', './tool-assets/TAO.html');
+          break;
+        case "about":
+          response = "> A library of archived games and programs, including but not limited to, Ported Software, Ported MS-DOS games, UGS Games. It was made and is maintained by an anonimus Developer. Some of the games, software, may be pirated or stolen. Use the software at your own risk.";
+          break;
+        case "exit":
+          response = "> goodbye.";
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+          }
+          break;
+      }
+
+      const spacer1 = document.createElement('div');
+      spacer1.className = 'line shown';
+      spacer1.innerHTML = '&nbsp;';
+      linesEl.appendChild(spacer1);
+
+      const responseLine = document.createElement('div');
+      responseLine.className = 'line shown';
+      responseLine.style.whiteSpace = 'pre-wrap';
+      responseLine.textContent = response;
+      linesEl.appendChild(responseLine);
+    }
+    let currentDataset = [];
+    let filteredItems = [];
+    let itemSelectedIndex = 0;
+    let currentMode = "games"; 
+
+    function openBrowseScreen(mode, showHidden = false) {
+      currentMode = mode;
+      currentDataset = ((mode === "games") ? games : tools).filter(item => showHidden || !item.hidden);
+
+      linesEl.innerHTML = '';
+      linesEl.style.display = 'none';
+
+      const playScreen = document.getElementById('play-screen');
+      playScreen.style.display = 'flex';
+      playScreen.innerHTML = `
+        <div class="search-row">
+          <label for="game-search">search:</label>
+          <input type="text" id="game-search" autocomplete="off" spellcheck="false" placeholder="type to filter..." />
+        </div>
+        <div id="play-screen-content"></div>
+        <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ BACKSPACE: back | ESC: back (exits fullscreen) | ENTER: launch ]</div>
+      `;
+
+      const searchInput = document.getElementById('game-search');
+      searchInput.focus();
+      searchInput.addEventListener('input', onItemSearchInput);
+      
+      itemSelectedIndex = 0;
+      updateItemFilter("");
+      document.addEventListener('keydown', onBrowseScreenKeydown);
+    }
+
+    function closeBrowseScreen() {
+      document.removeEventListener('keydown', onBrowseScreenKeydown);
+      const playScreen = document.getElementById('play-screen');
+      playScreen.style.display = 'none';
+      playScreen.innerHTML = '';
+
+      linesEl.style.display = '';
+      linesEl.innerHTML = '';
+      menuActive = false;
+      selectedIndex = 0;
+      showMainMenu();
+    }
+
+    const returnMenuScript = [
+      { text: "select an option:" },
+      { text: "" },
+      { type: "menu" },
+      { text: "" },
+      { text: "use \u2191 \u2193 to choose, enter to select" }
+    ];
+
+    function showMainMenu() {
+      linesEl.innerHTML = '';
+      returnMenuScript.forEach(entry => {
+        if (entry.type === "menu") {
+          const wrap = document.createElement('div');
+          wrap.className = 'line shown';
+          wrap.id = 'menu-list';
+          linesEl.appendChild(wrap);
+          selectedIndex = 0;
+          renderMenu(wrap);
+          menuActive = true;
+          document.addEventListener('keydown', onMenuKeydown);
+        } else {
+          const div = document.createElement('div');
+          div.className = 'line shown';
+          if (entry.text) {
+            div.textContent = entry.text;
+          } else {
+            div.innerHTML = '&nbsp;';
+          }
+          linesEl.appendChild(div);
+        }
       });
     }
 
-    let response = "";
-    switch (action) {
-      case "play":
-        openBrowseScreen("games");
-        return;
-      case "run":
-        openBrowseScreen("tools");
-        return;
-      case "download":
-        response = "> Downloading The Archive Online SingleFile...";
-        downloadFile('The_Archive_Online.html', './tool-assets/TAO.html');
-        break;
-      case "about":
-        response = "> A library of archived games and programs, including but not limited to, Ported Software, Ported MS-DOS games, UGS Games. It was made and is maintained by an anonimus Developer. Some of the games, software, may be pirated or stolen. Use the software at your own risk.";
-        break;
-      case "exit":
-        response = "> goodbye.";
-        if (document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        }
-        break;
+    function updateItemFilter(query) {
+      if (query === "") {
+        const popularItems = currentDataset.filter(item => item.popular);
+        const newItems = currentDataset.filter(item => item.newRelease);
+        const regularItems = currentDataset.filter(item => !item.popular && !item.newRelease);
+        
+        filteredItems = [...popularItems, ...newItems, ...regularItems];
+        renderDualList(popularItems, newItems, regularItems);
+      } else {
+        filteredItems = currentDataset.filter(item => item.name.toLowerCase().includes(query));
+        renderSingleList(filteredItems);
+      }
     }
 
-    const spacer1 = document.createElement('div');
-    spacer1.className = 'line shown';
-    spacer1.innerHTML = '&nbsp;';
-    linesEl.appendChild(spacer1);
+    function renderDualList(popular, newItems, indexOnly) {
+      const contentEl = document.getElementById('play-screen-content');
+      const headerTitle = (currentMode === "games") ? "-- Popular Hits --" : "-- Featured Software --";
+      
+      contentEl.innerHTML = `
+        <div class="section-title">${headerTitle}</div>
+        <div class="game-list" id="popular-list"></div>
+        <div class="section-title">-- New Releases --</div>
+        <div class="game-list" id="new-list"></div>
+        <div class="section-title">-- Index --</div>
+        <div class="game-list" id="all-list"></div>
+      `;
 
-    const responseLine = document.createElement('div');
-    responseLine.className = 'line shown';
-    responseLine.style.whiteSpace = 'pre-wrap';
-    responseLine.textContent = response;
-    linesEl.appendChild(responseLine);
-  }
+      const popList = document.getElementById('popular-list');
+      const newList = document.getElementById('new-list');
+      const allList = document.getElementById('all-list');
 
-  // ---- Shared Browsing Subsystem (Games / Tools) ----
-  let currentDataset = [];
-  let filteredItems = [];
-  let itemSelectedIndex = 0;
-  let currentMode = "games"; // "games" or "tools"
+      let totalIdx = 0;
+      
+      popular.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
+        row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+        popList.appendChild(row);
+        totalIdx++;
+      });
 
-  function openBrowseScreen(mode, showHidden = false) {
-    currentMode = mode;
-    // FIX: exclude hidden entries unless explicitly told to show them (antiHD unlock)
-    currentDataset = ((mode === "games") ? games : tools).filter(item => showHidden || !item.hidden);
+      newItems.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
+        row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+        newList.appendChild(row);
+        totalIdx++;
+      });
 
-    linesEl.innerHTML = '';
-    linesEl.style.display = 'none';
+      indexOnly.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
+        row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+        allList.appendChild(row);
+        totalIdx++;
+      });
+    }
 
-    const playScreen = document.getElementById('play-screen');
-    playScreen.style.display = 'flex';
-    playScreen.innerHTML = `
-      <div class="search-row">
-        <label for="game-search">search:</label>
-        <input type="text" id="game-search" autocomplete="off" spellcheck="false" placeholder="type to filter..." />
-      </div>
-      <div id="play-screen-content"></div>
-      <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ BACKSPACE: back | ESC: back (exits fullscreen) | ENTER: launch ]</div>
-    `;
+    function renderSingleList(list) {
+      const contentEl = document.getElementById('play-screen-content');
+      contentEl.innerHTML = `
+        <div class="section-title">-- Search Results --</div>
+        <div class="game-list" id="search-list"></div>
+      `;
+      const searchList = document.getElementById('search-list');
 
-    const searchInput = document.getElementById('game-search');
-    searchInput.focus();
-    searchInput.addEventListener('input', onItemSearchInput);
-    
-    itemSelectedIndex = 0;
-    updateItemFilter("");
-    document.addEventListener('keydown', onBrowseScreenKeydown);
-  }
+      if (list.length === 0) {
+        searchList.innerHTML = `<div class="no-results">no items found</div>`;
+        return;
+      }
 
-  function closeBrowseScreen() {
-    document.removeEventListener('keydown', onBrowseScreenKeydown);
-    const playScreen = document.getElementById('play-screen');
-    playScreen.style.display = 'none';
-    playScreen.innerHTML = '';
+      list.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'game-row' + (idx === itemSelectedIndex ? ' selected' : '');
+        row.textContent = (idx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+        searchList.appendChild(row);
+      });
+    }
 
-    linesEl.style.display = '';
-    linesEl.innerHTML = '';
+    function onItemSearchInput(e) {
+      const query = e.target.value.trim().toLowerCase();
+      itemSelectedIndex = 0;
+      updateItemFilter(query);
+    }
 
-    // FIX: reset menu state so keyboard navigation works again on re-render
-    menuActive = false;
-    selectedIndex = 0;
+    function downloadFile(filename, filepath) {
+      fetch(filepath)
+        .then(res => res.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        })
+        .catch(err => {
+          console.error('Download failed:', err);
+        });
+    }
 
-    // FIX: going back should not replay the SYSTEM BOOT sequence — that only
-    // plays once, on initial page load. Backing out just redraws the menu instantly.
-    showMainMenu();
-  }
+    function launchAsset(item) {
+      if (!item || !item.url) return;
 
-  const returnMenuScript = [
-    { text: "select an option:" },
-    { text: "" },
-    { type: "menu" },
-    { text: "" },
-    { text: "use \u2191 \u2193 to choose, enter to select" }
-  ];
+      const popup = window.open('', '_blank', 'width=' + screen.width + ',height=' + screen.height);
 
-  function showMainMenu() {
-    linesEl.innerHTML = '';
-    returnMenuScript.forEach(entry => {
+      if (!popup) {
+        window.open(item.url, '_blank');
+        return;
+      }
+
+      fetch(item.url)
+        .then(res => {
+          if (!res.ok) throw new Error('fetch failed');
+          return res.text();
+        })
+        .then(html => {
+          popup.document.open();
+          popup.document.write(html);
+          popup.document.close();
+        })
+        .catch(() => {
+          popup.location.href = item.url;
+        });
+    }
+
+    function onBrowseScreenKeydown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeBrowseScreen();
+        return;
+      }
+
+      if (e.key === 'Backspace') {
+        const searchInput = document.getElementById('game-search');
+        if (!searchInput || searchInput.value === '') {
+          e.preventDefault();
+          closeBrowseScreen();
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (filteredItems.length === 0) return;
+        itemSelectedIndex = (itemSelectedIndex + 1) % filteredItems.length;
+        updateItemFilter(document.getElementById('game-search').value.trim().toLowerCase());
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        itemSelectedIndex = (itemSelectedIndex - 1 + filteredItems.length) % filteredItems.length;
+        updateItemFilter(document.getElementById('game-search').value.trim().toLowerCase());
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const item = filteredItems[itemSelectedIndex];
+        if (item) {
+          if (item.special === 'antihd') {
+            document.removeEventListener('keydown', onBrowseScreenKeydown);
+            openPinScreen();
+          } else {
+            launchAsset(item);
+          }
+        }
+      }
+    }
+
+    let pinBuffer = '';
+
+    function openPinScreen() {
+      pinBuffer = '';
+      const playScreen = document.getElementById('play-screen');
+      playScreen.innerHTML = `
+        <div class="pin-screen">
+          <div class="pin-label">antiHD // enter access pin</div>
+          <div class="pin-dots" id="pin-dots"></div>
+          <div id="pin-message" class="pin-message">&nbsp;</div>
+        </div>
+        <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ BACKSPACE (empty): back | ESC: back (exits fullscreen) | ENTER: submit ]</div>
+      `;
+      renderPinDots();
+      document.addEventListener('keydown', onPinScreenKeydown);
+    }
+
+    function renderPinDots() {
+      const dotsEl = document.getElementById('pin-dots');
+      if (!dotsEl) return;
+      dotsEl.innerHTML = '';
+      for (let pos = 0; pos < ANTIHD_PIN.length; pos++) {
+        const dot = document.createElement('div');
+        dot.className = 'pin-dot';
+        if (pos < pinBuffer.length) {
+          dot.classList.add('filled');
+        } else if (pos === pinBuffer.length) {
+          dot.classList.add('active');
+        }
+        dotsEl.appendChild(dot);
+      }
+    }
+
+    function showPinError() {
+      const dotsEl = document.getElementById('pin-dots');
+      const msg = document.getElementById('pin-message');
+      if (msg) {
+        msg.textContent = '> access denied.';
+        msg.classList.add('error');
+      }
+      if (dotsEl) {
+        dotsEl.classList.add('error', 'shake');
+        setTimeout(() => {
+          dotsEl.classList.remove('shake');
+        }, 400);
+      }
+    }
+
+    function clearPinError() {
+      const dotsEl = document.getElementById('pin-dots');
+      const msg = document.getElementById('pin-message');
+      if (msg) {
+        msg.textContent = '\u00a0';
+        msg.classList.remove('error');
+      }
+      if (dotsEl) dotsEl.classList.remove('error');
+    }
+
+    function onPinScreenKeydown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        document.removeEventListener('keydown', onPinScreenKeydown);
+        closeBrowseScreen();
+        return;
+      }
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        if (pinBuffer.length > 0) {
+          pinBuffer = pinBuffer.slice(0, -1);
+          clearPinError();
+          renderPinDots();
+        } else {
+
+          document.removeEventListener('keydown', onPinScreenKeydown);
+          closeBrowseScreen();
+        }
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (pinBuffer.length === 0) return;
+        if (pinBuffer === ANTIHD_PIN) {
+          document.removeEventListener('keydown', onPinScreenKeydown);
+          openBrowseScreen('games', true);
+        } else {
+          showPinError();
+          pinBuffer = '';
+          renderPinDots();
+        }
+        return;
+      }
+      if (/^[0-9]$/.test(e.key) && pinBuffer.length < ANTIHD_PIN.length) {
+        e.preventDefault();
+        clearPinError();
+        pinBuffer += e.key;
+        renderPinDots();
+      }
+    }
+
+
+
+    function renderMenu(container) {
+      container.innerHTML = '';
+      menuOptions.forEach((opt, idx) => {
+        const row = document.createElement('div');
+        row.className = 'menu-row' + (idx === selectedIndex ? ' selected' : '');
+        row.textContent = (idx === selectedIndex ? '  > ' : '    ') + opt.label;
+        container.appendChild(row);
+      });
+    }
+
+    function onMenuKeydown(e) {
+      if (!menuActive) return;
+      const menuEl = document.getElementById('menu-list');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % menuOptions.length;
+        renderMenu(menuEl);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + menuOptions.length) % menuOptions.length;
+        renderMenu(menuEl);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSelection(menuOptions[selectedIndex].action);
+      }
+    }
+
+    function typeLine(entry, onDone) {
       if (entry.type === "menu") {
         const wrap = document.createElement('div');
         wrap.className = 'line shown';
@@ -666,370 +911,46 @@
         renderMenu(wrap);
         menuActive = true;
         document.addEventListener('keydown', onMenuKeydown);
-      } else {
-        const div = document.createElement('div');
-        div.className = 'line shown';
-        if (entry.text) {
-          div.textContent = entry.text;
-        } else {
-          div.innerHTML = '&nbsp;';
-        }
-        linesEl.appendChild(div);
-      }
-    });
-  }
-
-  function updateItemFilter(query) {
-    if (query === "") {
-      const popularItems = currentDataset.filter(item => item.popular);
-      const newItems = currentDataset.filter(item => item.newRelease);
-      const regularItems = currentDataset.filter(item => !item.popular && !item.newRelease);
-      
-      filteredItems = [...popularItems, ...newItems, ...regularItems];
-      renderDualList(popularItems, newItems, regularItems);
-    } else {
-      filteredItems = currentDataset.filter(item => item.name.toLowerCase().includes(query));
-      renderSingleList(filteredItems);
-    }
-  }
-
-  function renderDualList(popular, newItems, indexOnly) {
-    const contentEl = document.getElementById('play-screen-content');
-    const headerTitle = (currentMode === "games") ? "-- Popular Hits --" : "-- Featured Software --";
-    
-    contentEl.innerHTML = `
-      <div class="section-title">${headerTitle}</div>
-      <div class="game-list" id="popular-list"></div>
-      <div class="section-title">-- New Releases --</div>
-      <div class="game-list" id="new-list"></div>
-      <div class="section-title">-- Index --</div>
-      <div class="game-list" id="all-list"></div>
-    `;
-
-    const popList = document.getElementById('popular-list');
-    const newList = document.getElementById('new-list');
-    const allList = document.getElementById('all-list');
-
-    let totalIdx = 0;
-    
-    popular.forEach((item) => {
-      const row = document.createElement('div');
-      row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
-      row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
-      popList.appendChild(row);
-      totalIdx++;
-    });
-
-    newItems.forEach((item) => {
-      const row = document.createElement('div');
-      row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
-      row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
-      newList.appendChild(row);
-      totalIdx++;
-    });
-
-    indexOnly.forEach((item) => {
-      const row = document.createElement('div');
-      row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
-      row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
-      allList.appendChild(row);
-      totalIdx++;
-    });
-  }
-
-  function renderSingleList(list) {
-    const contentEl = document.getElementById('play-screen-content');
-    contentEl.innerHTML = `
-      <div class="section-title">-- Search Results --</div>
-      <div class="game-list" id="search-list"></div>
-    `;
-    const searchList = document.getElementById('search-list');
-
-    if (list.length === 0) {
-      searchList.innerHTML = `<div class="no-results">no items found</div>`;
-      return;
-    }
-
-    list.forEach((item, idx) => {
-      const row = document.createElement('div');
-      row.className = 'game-row' + (idx === itemSelectedIndex ? ' selected' : '');
-      row.textContent = (idx === itemSelectedIndex ? '  > ' : '    ') + item.name;
-      searchList.appendChild(row);
-    });
-  }
-
-  function onItemSearchInput(e) {
-    const query = e.target.value.trim().toLowerCase();
-    itemSelectedIndex = 0;
-    updateItemFilter(query);
-  }
-
-  function downloadFile(filename, filepath) {
-    fetch(filepath)
-      .then(res => res.blob())
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      })
-      .catch(err => {
-        console.error('Download failed:', err);
-      });
-  }
-
-  function launchAsset(item) {
-    if (!item || !item.url) return;
-
-    // Open a blank popup first (must be synchronous with user gesture to avoid blockers)
-    const popup = window.open('', '_blank', 'width=' + screen.width + ',height=' + screen.height);
-
-    if (!popup) {
-      // Popup was blocked — fall back to new tab
-      window.open(item.url, '_blank');
-      return;
-    }
-
-    // Fetch the game file and write it into the about:blank popup
-    fetch(item.url)
-      .then(res => {
-        if (!res.ok) throw new Error('fetch failed');
-        return res.text();
-      })
-      .then(html => {
-        popup.document.open();
-        popup.document.write(html);
-        popup.document.close();
-      })
-      .catch(() => {
-        // If fetch fails (e.g. file:// protocol), just navigate the popup directly
-        popup.location.href = item.url;
-      });
-  }
-
-  function onBrowseScreenKeydown(e) {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closeBrowseScreen();
-      return;
-    }
-
-    if (e.key === 'Backspace') {
-      const searchInput = document.getElementById('game-search');
-      if (!searchInput || searchInput.value === '') {
-        e.preventDefault();
-        closeBrowseScreen();
-      }
-      return;
-    }
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (filteredItems.length === 0) return;
-      itemSelectedIndex = (itemSelectedIndex + 1) % filteredItems.length;
-      updateItemFilter(document.getElementById('game-search').value.trim().toLowerCase());
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      itemSelectedIndex = (itemSelectedIndex - 1 + filteredItems.length) % filteredItems.length;
-      updateItemFilter(document.getElementById('game-search').value.trim().toLowerCase());
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      const item = filteredItems[itemSelectedIndex];
-      if (item) {
-        if (item.special === 'antihd') {
-          document.removeEventListener('keydown', onBrowseScreenKeydown);
-          openPinScreen();
-        } else {
-          launchAsset(item);
-        }
-      }
-    }
-  }
-
-  // ---- antiHD PIN gate ----
-  let pinBuffer = '';
-
-  function openPinScreen() {
-    pinBuffer = '';
-    const playScreen = document.getElementById('play-screen');
-    playScreen.innerHTML = `
-      <div class="pin-screen">
-        <div class="pin-label">antiHD // enter access pin</div>
-        <div class="pin-dots" id="pin-dots"></div>
-        <div id="pin-message" class="pin-message">&nbsp;</div>
-      </div>
-      <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ BACKSPACE (empty): back | ESC: back (exits fullscreen) | ENTER: submit ]</div>
-    `;
-    renderPinDots();
-    document.addEventListener('keydown', onPinScreenKeydown);
-  }
-
-  function renderPinDots() {
-    const dotsEl = document.getElementById('pin-dots');
-    if (!dotsEl) return;
-    dotsEl.innerHTML = '';
-    for (let pos = 0; pos < ANTIHD_PIN.length; pos++) {
-      const dot = document.createElement('div');
-      dot.className = 'pin-dot';
-      if (pos < pinBuffer.length) {
-        dot.classList.add('filled');
-      } else if (pos === pinBuffer.length) {
-        dot.classList.add('active');
-      }
-      dotsEl.appendChild(dot);
-    }
-  }
-
-  function showPinError() {
-    const dotsEl = document.getElementById('pin-dots');
-    const msg = document.getElementById('pin-message');
-    if (msg) {
-      msg.textContent = '> access denied.';
-      msg.classList.add('error');
-    }
-    if (dotsEl) {
-      dotsEl.classList.add('error', 'shake');
-      setTimeout(() => {
-        dotsEl.classList.remove('shake');
-      }, 400);
-    }
-  }
-
-  function clearPinError() {
-    const dotsEl = document.getElementById('pin-dots');
-    const msg = document.getElementById('pin-message');
-    if (msg) {
-      msg.textContent = '\u00a0';
-      msg.classList.remove('error');
-    }
-    if (dotsEl) dotsEl.classList.remove('error');
-  }
-
-  function onPinScreenKeydown(e) {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      document.removeEventListener('keydown', onPinScreenKeydown);
-      closeBrowseScreen();
-      return;
-    }
-    if (e.key === 'Backspace') {
-      e.preventDefault();
-      if (pinBuffer.length > 0) {
-        pinBuffer = pinBuffer.slice(0, -1);
-        clearPinError();
-        renderPinDots();
-      } else {
-        // FIX: Backspace on an empty buffer acts as "go back" without exiting
-        // fullscreen (Escape always exits fullscreen at the browser level).
-        document.removeEventListener('keydown', onPinScreenKeydown);
-        closeBrowseScreen();
-      }
-      return;
-    }
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (pinBuffer.length === 0) return;
-      if (pinBuffer === ANTIHD_PIN) {
-        document.removeEventListener('keydown', onPinScreenKeydown);
-        openBrowseScreen('games', true);
-      } else {
-        showPinError();
-        pinBuffer = '';
-        renderPinDots();
-      }
-      return;
-    }
-    if (/^[0-9]$/.test(e.key) && pinBuffer.length < ANTIHD_PIN.length) {
-      e.preventDefault();
-      clearPinError();
-      pinBuffer += e.key;
-      renderPinDots();
-    }
-  }
-
-
-
-  function renderMenu(container) {
-    container.innerHTML = '';
-    menuOptions.forEach((opt, idx) => {
-      const row = document.createElement('div');
-      row.className = 'menu-row' + (idx === selectedIndex ? ' selected' : '');
-      row.textContent = (idx === selectedIndex ? '  > ' : '    ') + opt.label;
-      container.appendChild(row);
-    });
-  }
-
-  function onMenuKeydown(e) {
-    if (!menuActive) return;
-    const menuEl = document.getElementById('menu-list');
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      selectedIndex = (selectedIndex + 1) % menuOptions.length;
-      renderMenu(menuEl);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      selectedIndex = (selectedIndex - 1 + menuOptions.length) % menuOptions.length;
-      renderMenu(menuEl);
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSelection(menuOptions[selectedIndex].action);
-    }
-  }
-
-  function typeLine(entry, onDone) {
-    if (entry.type === "menu") {
-      const wrap = document.createElement('div');
-      wrap.className = 'line shown';
-      wrap.id = 'menu-list';
-      linesEl.appendChild(wrap);
-      selectedIndex = 0;
-      renderMenu(wrap);
-      menuActive = true;
-      document.addEventListener('keydown', onMenuKeydown);
-      onDone();
-      return;
-    }
-
-    const div = document.createElement('div');
-    div.className = 'line';
-    linesEl.appendChild(div);
-    requestAnimationFrame(() => div.classList.add('shown'));
-
-    if (!entry.text) {
-      div.innerHTML = '&nbsp;';
-      setTimeout(onDone, 80);
-      return;
-    }
-
-    let charIndex = 0;
-    const speed = 25;
-    function typeChar() {
-      if (charIndex <= entry.text.length) {
-        div.textContent = entry.text.slice(0, charIndex);
-        charIndex++;
-        setTimeout(typeChar, speed);
-      } else {
         onDone();
+        return;
       }
+
+      const div = document.createElement('div');
+      div.className = 'line';
+      linesEl.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('shown'));
+
+      if (!entry.text) {
+        div.innerHTML = '&nbsp;';
+        setTimeout(onDone, 80);
+        return;
+      }
+
+      let charIndex = 0;
+      const speed = 25;
+      function typeChar() {
+        if (charIndex <= entry.text.length) {
+          div.textContent = entry.text.slice(0, charIndex);
+          charIndex++;
+          setTimeout(typeChar, speed);
+        } else {
+          onDone();
+        }
+      }
+      typeChar();
     }
-    typeChar();
-  }
 
-  function runScript() {
-    if (i >= script.length) return;
-    const entry = script[i];
-    i++;
-    const delay = entry.text === "" ? 60 : 0;
-    setTimeout(() => typeLine(entry, runScript), delay);
-  }
+    function runScript() {
+      if (i >= script.length) return;
+      const entry = script[i];
+      i++;
+      const delay = entry.text === "" ? 60 : 0;
+      setTimeout(() => typeLine(entry, runScript), delay);
+    }
 
-  setTimeout(runScript, 350);
-  setTimeout(() => hintEl.classList.add('shown'), 600);
-</script>
+    setTimeout(runScript, 350);
+    setTimeout(() => hintEl.classList.add('shown'), 600);
+  </script>
 
-</body>
+  </body>
 </html>
