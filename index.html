@@ -90,6 +90,9 @@
       z-index: 3;
       opacity: 0.5;
     }
+    .crt.no-scanlines::before {
+      display: none;
+    }
     .crt::after {
       content: "";
       position: fixed;
@@ -97,6 +100,10 @@
       pointer-events: none;
       z-index: 4;
       animation: flicker 6s infinite;
+    }
+    .crt.no-flicker::after {
+      animation: none;
+      opacity: 1;
     }
     @keyframes flicker {
       0%, 96%, 100% { opacity: 1; }
@@ -120,6 +127,9 @@
       animation: roll 9s linear infinite;
       mix-blend-mode: screen;
     }
+    .crt-roll.hidden-effect {
+      display: none;
+    }
     @keyframes roll {
       0% { top: -90px; }
       100% { top: 100%; }
@@ -135,6 +145,9 @@
       background-size: 180px 180px;
       animation: noiseShift 0.4s steps(4) infinite;
     }
+    .crt-noise.hidden-effect {
+      display: none;
+    }
     @keyframes noiseShift {
       0% { transform: translate(0, 0); }
       25% { transform: translate(-2%, 1%); }
@@ -148,6 +161,9 @@
       width: 100%;
       height: 100%;
       animation: jitter 8s infinite;
+    }
+    .terminal-wrap.no-jitter {
+      animation: none;
     }
     @keyframes jitter {
       0%, 99.2%, 100% { transform: translate(0, 0); }
@@ -363,10 +379,334 @@
       text-shadow: 0 0 4px var(--error);
       opacity: 1;
     }
+    .settings-row {
+      white-space: pre;
+      display: flex;
+      justify-content: space-between;
+      max-width: 420px;
+    }
+    .settings-row.selected {
+      color: #000000;
+      background: var(--fg);
+      text-shadow: none;
+      box-shadow: 0 0 14px 2px rgba(0, 255, 0, 0.65);
+    }
+    .settings-val {
+      opacity: 0.85;
+    }
+    .settings-val.dropdown-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dropdown-caret {
+      font-size: 0.8em;
+      opacity: 0.75;
+    }
+    .dropdown-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin: 2px 0 8px 1.6em;
+    }
+    .dropdown-option.current {
+      font-weight: bold;
+    }
+
+    /* ---------------- UI ERAS ---------------- */
+    body.era-modern .crt,
+    body.era-2000s .crt,
+    body.era-2010s .crt {
+      border-radius: 0;
+      box-shadow: none;
+      animation: none;
+    }
+    body.era-modern .crt::before,
+    body.era-modern .crt::after,
+    body.era-2000s .crt::before,
+    body.era-2000s .crt::after,
+    body.era-2010s .crt::before,
+    body.era-2010s .crt::after {
+      content: none;
+    }
+    body.era-modern .crt-vignette, body.era-modern .crt-curve,
+    body.era-modern .crt-noise, body.era-modern .crt-roll,
+    body.era-2000s .crt-vignette, body.era-2000s .crt-curve,
+    body.era-2000s .crt-noise, body.era-2000s .crt-roll,
+    body.era-2010s .crt-vignette, body.era-2010s .crt-curve,
+    body.era-2010s .crt-noise, body.era-2010s .crt-roll {
+      display: none;
+    }
+    body.era-modern .terminal-wrap,
+    body.era-2000s .terminal-wrap,
+    body.era-2010s .terminal-wrap {
+      animation: none;
+    }
+
+    /* Modern */
+    body.era-modern .crt { background: #0b0d10; }
+    body.era-modern .lines, body.era-modern .play-screen {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #e4e6eb;
+      text-shadow: none;
+    }
+    body.era-modern .menu-row, body.era-modern .game-row, body.era-modern .settings-row {
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+    body.era-modern .menu-row.selected, body.era-modern .game-row.selected, body.era-modern .settings-row.selected {
+      background: #6366f1;
+      color: #fff;
+      text-shadow: none;
+      box-shadow: none;
+    }
+    body.era-modern #game-search { border-bottom-color: #6366f1; color: #e4e6eb; }
+    body.era-modern .section-title { opacity: 0.5; }
+    body.era-modern .pin-dot { border-color: #6366f1; }
+    body.era-modern .pin-dot.filled::after { text-shadow: none; }
+
+    /* 2000's (Windows XP Luna / Web 1.0) */
+    body.era-2000s .crt {
+      background:
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 2px, transparent 2px, transparent 42px),
+        #ece9d8;
+    }
+    body.era-2000s .lines, body.era-2000s .play-screen {
+      font-family: Verdana, Tahoma, Geneva, sans-serif;
+      color: #000;
+      text-shadow: none;
+      font-size: 13px;
+    }
+
+    /* fake browser chrome */
+    .xp-titlebar, .xp-toolbar { display: none; }
+    body.era-2000s .xp-titlebar, body.era-2000s .xp-toolbar {
+      display: flex;
+    }
+    body.era-2000s .terminal {
+      padding-top: calc(4vh + 58px);
+    }
+
+    .xp-titlebar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 27px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+      background: linear-gradient(to bottom,
+        color-mix(in srgb, var(--fg) 55%, white) 0%,
+        var(--fg) 45%,
+        color-mix(in srgb, var(--fg) 70%, black) 100%);
+      color: #fff;
+      font-family: Tahoma, Verdana, sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 8px 8px 0 0;
+      z-index: 20;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+    .xp-titlebar-left { display: flex; align-items: center; gap: 5px; }
+    .xp-titlebar-btns { display: flex; gap: 2px; }
+    .xp-btn {
+      width: 19px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(to bottom, #fbfbfb, #c6c6c6);
+      color: #000;
+      border-radius: 2px;
+      border: 1px solid #7d7d7d;
+      font-size: 10px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .xp-btn:hover { filter: brightness(1.08); }
+    .xp-btn-close { background: linear-gradient(to bottom, #f68e8e, #d33131); color: #fff; }
+
+    .xp-toolbar {
+      position: absolute;
+      top: 27px; left: 0; right: 0;
+      height: 27px;
+      align-items: center;
+      gap: 10px;
+      padding: 0 8px;
+      background: linear-gradient(to bottom, #f6f6f2, #dcdcd2);
+      border-bottom: 1px solid #9a9a8c;
+      font-family: Tahoma, Verdana, sans-serif;
+      font-size: 11px;
+      color: #333;
+      z-index: 20;
+    }
+    .xp-tool { opacity: 0.85; white-space: nowrap; }
+    .xp-tool-back, .xp-tool-home { cursor: pointer; }
+    .xp-tool-back:hover, .xp-tool-home:hover { opacity: 1; text-decoration: underline; }
+    .xp-addressbar {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #7f9db9;
+      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.25);
+      padding: 2px 6px;
+      font-size: 11px;
+      color: #333;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .xp-go {
+      background: linear-gradient(to bottom, #fefefe, #ece9d8);
+      border-top: 1px solid #fff;
+      border-left: 1px solid #fff;
+      border-right: 1px solid #919b9c;
+      border-bottom: 1px solid #919b9c;
+      padding: 1px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      color: color-mix(in srgb, var(--fg) 80%, black);
+      cursor: pointer;
+    }
+
+    /* groupbox-style section headers */
+    body.era-2000s .section-title {
+      background: linear-gradient(to bottom,
+        color-mix(in srgb, var(--fg) 60%, white),
+        color-mix(in srgb, var(--fg) 75%, black));
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-weight: bold;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35);
+      border: 1px solid color-mix(in srgb, var(--fg) 65%, black);
+      letter-spacing: 0.03em;
+      opacity: 1;
+      display: flex;
+      align-items: center;
+    }
+    .blink-badge { display: none; }
+    body.era-2000s .blink-badge {
+      display: inline-block;
+      margin-left: 8px;
+      color: #ffff33;
+      font-weight: bold;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.6);
+      animation: blink-badge-flash 1s steps(1) infinite;
+    }
+    @keyframes blink-badge-flash {
+      50% { opacity: 0; }
+    }
+
+    /* 3D beveled rows, Windows-button style */
+    body.era-2000s .menu-row, body.era-2000s .game-row, body.era-2000s .settings-row {
+      background: linear-gradient(to bottom, #fefefe, #ece9d8);
+      border-top: 1px solid #fff;
+      border-left: 1px solid #fff;
+      border-right: 1px solid #919b9c;
+      border-bottom: 1px solid #919b9c;
+      padding: 3px 8px;
+      margin-bottom: 3px;
+    }
+    body.era-2000s .menu-row.selected, body.era-2000s .game-row.selected, body.era-2000s .settings-row.selected {
+      background: linear-gradient(to bottom,
+        color-mix(in srgb, var(--fg) 55%, white),
+        color-mix(in srgb, var(--fg) 75%, black));
+      color: #fff;
+      border: 1px solid color-mix(in srgb, var(--fg) 70%, black);
+      text-shadow: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+    body.era-2000s #game-search {
+      background: #fff;
+      border: 1px solid #7f9db9;
+      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.25);
+      color: #000;
+      font-family: Verdana, Tahoma, sans-serif;
+      padding: 3px 6px;
+    }
+    body.era-2000s .pin-dot { border-color: var(--fg); color: #000; background: #fff; }
+    body.era-2000s .pin-dot.filled::after { color: #000; text-shadow: none; }
+
+    body.era-2000s #play-screen-content::-webkit-scrollbar { width: 16px; }
+    body.era-2000s #play-screen-content::-webkit-scrollbar-track {
+      background: #ece9d8;
+      border-left: 1px solid #9a9a8c;
+    }
+    body.era-2000s #play-screen-content::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, #fbfbfb, #c6c6c6);
+      border: 1px solid #9a9a8c;
+    }
+
+    /* 2010's (flat / early Bootstrap) */
+    body.era-2010s .crt { background: #eef1f5; }
+    body.era-2010s .lines, body.era-2010s .play-screen {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: #2c3e50;
+      text-shadow: none;
+    }
+    body.era-2010s .menu-row, body.era-2010s .game-row, body.era-2010s .settings-row {
+      background: #fff;
+      border-radius: 4px;
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+    body.era-2010s .menu-row.selected, body.era-2010s .game-row.selected, body.era-2010s .settings-row.selected {
+      background: #2980b9;
+      color: #fff;
+      text-shadow: none;
+      box-shadow: 0 2px 6px rgba(41, 128, 185, 0.4);
+    }
+    body.era-2010s #game-search { border-bottom-color: #2980b9; color: #2c3e50; }
+    body.era-2010s .section-title { color: #7f8c8d; opacity: 1; }
+    body.era-2010s .pin-dot { border-color: #2980b9; color: #2980b9; }
+    body.era-2010s .pin-dot.filled::after { color: #2980b9; text-shadow: none; }
+
+    /* Mouse navigation affordances (Modern / 2000's / 2010's only) */
+    body.mouse-nav .menu-row,
+    body.mouse-nav .game-row,
+    body.mouse-nav .settings-row {
+      cursor: pointer;
+    }
+    body.era-modern.mouse-nav .menu-row:hover:not(.selected),
+    body.era-modern.mouse-nav .game-row:hover:not(.selected),
+    body.era-modern.mouse-nav .settings-row:hover:not(.selected) {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 6px;
+    }
+    body.era-2000s.mouse-nav .menu-row:hover:not(.selected),
+    body.era-2000s.mouse-nav .game-row:hover:not(.selected),
+    body.era-2000s.mouse-nav .settings-row:hover:not(.selected) {
+      background: linear-gradient(to bottom,
+        color-mix(in srgb, var(--fg) 12%, white),
+        color-mix(in srgb, var(--fg) 25%, white));
+      border-color: color-mix(in srgb, var(--fg) 55%, #7f9db9);
+    }
+    body.era-2010s.mouse-nav .menu-row:hover:not(.selected),
+    body.era-2010s.mouse-nav .game-row:hover:not(.selected),
+    body.era-2010s.mouse-nav .settings-row:hover:not(.selected) {
+      background: #f0f4f8;
+    }
   </style>
   </head>
   <body>
   <div class="crt">
+    <div class="xp-titlebar" id="xp-titlebar">
+      <span class="xp-titlebar-left">
+        <span class="xp-titlebar-icon">🗂</span>
+        <span class="xp-titlebar-text">The ArchIve Portal - Microsoft Internet Explorer</span>
+      </span>
+      <span class="xp-titlebar-btns">
+        <span class="xp-btn xp-btn-min">_</span>
+        <span class="xp-btn xp-btn-max">▢</span>
+        <span class="xp-btn xp-btn-close">✕</span>
+      </span>
+    </div>
+    <div class="xp-toolbar" id="xp-toolbar">
+      <span class="xp-tool xp-tool-back">◀ Back</span>
+      <span class="xp-tool">Forward ▶</span>
+      <span class="xp-tool">⟳ Refresh</span>
+      <span class="xp-tool xp-tool-home">⌂ Home</span>
+      <span class="xp-addressbar">Address:&nbsp;<b>C:\ArchIve\index.html</b></span>
+      <span class="xp-go">Go</span>
+    </div>
     <div class="crt-roll"></div>
     <div class="terminal-wrap">
       <div class="terminal">
@@ -436,9 +776,17 @@
     const menuOptions = [
       { label: "Games", action: "play" },
       { label: "Software", action: "run" },
+      { label: "Settings", action: "settings" },
       { label: "About", action: "about" },
       { label: "Exit", action: "exit" }
     ];
+
+    function getMenuOptions() {
+      if (eras[currentEraIndex].key === '2000s') {
+        return menuOptions.filter(opt => opt.action !== 'exit');
+      }
+      return menuOptions;
+    }
 
     const script = [
       { text: "SYSTEM BOOT // The ArchIve v0.7.4" },
@@ -464,10 +812,7 @@
     let menuActive = false;
     let fullscreenRequested = false;
 
-    function requestFullscreen() {
-      if (fullscreenRequested) return;
-      fullscreenRequested = true;
-      hintEl.classList.remove('shown');
+    function doRequestFullscreen() {
       const el = document.documentElement;
       if (el.requestFullscreen) {
         el.requestFullscreen().catch(() => {});
@@ -478,8 +823,92 @@
       }
     }
 
+    function requestFullscreen() {
+      if (fullscreenRequested) return;
+      fullscreenRequested = true;
+      hintEl.classList.remove('shown');
+      doRequestFullscreen();
+    }
+
     document.addEventListener('keydown', requestFullscreen, { once: true });
     document.addEventListener('click', requestFullscreen, { once: true });
+
+    // ---- CRT effect settings ----
+    const settings = {
+      scanlines: true,
+      noise: true,
+      flicker: true,
+      jitter: true
+    };
+
+    const themes = [
+      { name: "Green Phosphor", fg: "#00FF00", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff4444" },
+      { name: "Amber CRT",      fg: "#FFB000", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff4444" },
+      { name: "Cyan Terminal",  fg: "#00E5FF", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff5577" },
+      { name: "Blood Red",      fg: "#FF2A2A", scanline: "rgba(0, 0, 0, 0.18)", error: "#ffaa00" },
+      { name: "Ghost White",    fg: "#F2F2F2", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff4444" },
+      { name: "Windows XP",     fg: "#2A63B0", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff4444" },
+      { name: "Windows Vista",  fg: "#2E9FD6", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff5577" },
+      { name: "Mac OS X",       fg: "#1E90FF", scanline: "rgba(0, 0, 0, 0.18)", error: "#FF3B30" }
+    ];
+    let currentThemeIndex = 0;
+
+    const eras = [
+      { key: "archive", name: "ArchIve (Current)" },
+      { key: "modern",  name: "Modern" },
+      { key: "2000s",   name: "2000's" },
+      { key: "2010s",   name: "2010's" }
+    ];
+    let currentEraIndex = 0;
+
+    const settingsItems = [
+      { type: "toggle", label: "Scanlines", key: "scanlines" },
+      { type: "toggle", label: "Static Noise", key: "noise" },
+      { type: "toggle", label: "Screen Flicker", key: "flicker" },
+      { type: "toggle", label: "Glitch Jitter", key: "jitter" },
+      { type: "theme", label: "Color Theme" },
+      { type: "era", label: "UI Era" }
+    ];
+
+    function applySettings() {
+      const crtEl = document.querySelector('.crt');
+      const wrapEl = document.querySelector('.terminal-wrap');
+      const noiseEl = document.querySelector('.crt-noise');
+      const rollEl = document.querySelector('.crt-roll');
+
+      crtEl.classList.toggle('no-scanlines', !settings.scanlines);
+      crtEl.classList.toggle('no-flicker', !settings.flicker);
+      wrapEl.classList.toggle('no-jitter', !settings.jitter);
+      noiseEl.classList.toggle('hidden-effect', !settings.noise);
+      rollEl.classList.toggle('hidden-effect', !settings.noise);
+    }
+
+    function applyTheme(idx) {
+      currentThemeIndex = (idx + themes.length) % themes.length;
+      const theme = themes[currentThemeIndex];
+      const root = document.documentElement;
+      root.style.setProperty('--fg', theme.fg);
+      root.style.setProperty('--scanline', theme.scanline);
+      root.style.setProperty('--error', theme.error);
+    }
+
+    function applyEra(idx) {
+      currentEraIndex = (idx + eras.length) % eras.length;
+      const era = eras[currentEraIndex];
+      document.body.classList.remove('era-modern', 'era-2000s', 'era-2010s');
+      if (era.key !== 'archive') {
+        document.body.classList.add('era-' + era.key);
+      }
+      applyMouseEraClass();
+    }
+
+    function isMouseEra() {
+      return eras[currentEraIndex].key !== 'archive';
+    }
+
+    function applyMouseEraClass() {
+      document.body.classList.toggle('mouse-nav', isMouseEra());
+    }
 
     function handleSelection(action) {
       menuActive = false;
@@ -487,9 +916,10 @@
 
       const menuEl = document.getElementById('menu-list');
       if (menuEl) {
+        const visibleOptions = getMenuOptions();
         [...menuEl.children].forEach((row, idx) => {
           row.classList.remove('selected');
-          row.textContent = `    ${menuOptions[idx].label}`;
+          row.textContent = `    ${visibleOptions[idx].label}`;
         });
       }
 
@@ -500,6 +930,9 @@
           return;
         case "run":
           openBrowseScreen("tools");
+          return;
+        case "settings":
+          openSettingsScreen();
           return;
         case "download":
           response = "> Downloading The Archive Online SingleFile...";
@@ -527,6 +960,262 @@
       responseLine.textContent = response;
       linesEl.appendChild(responseLine);
     }
+
+    // ---- Settings screen ----
+    let settingsSelectedIndex = 0;
+    let openDropdownType = null; // null | 'theme' | 'era'
+    let dropdownHighlightIndex = 0;
+
+    function openSettingsScreen() {
+      settingsSelectedIndex = 0;
+      openDropdownType = null;
+      linesEl.innerHTML = '';
+      linesEl.style.display = 'none';
+
+      const playScreen = document.getElementById('play-screen');
+      playScreen.style.display = 'flex';
+      playScreen.innerHTML = `
+        <div class="section-title">-- Effects --</div>
+        <div id="settings-list-effects" class="game-list"></div>
+        <div class="section-title">-- Theme --</div>
+        <div id="settings-list-theme" class="game-list"></div>
+        <div class="section-title">-- UI Era --</div>
+        <div id="settings-list-era" class="game-list"></div>
+        <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ \u2191 \u2193: choose | ENTER: toggle/open | ESC / BACKSPACE: back ]</div>
+      `;
+
+      renderSettingsList();
+      document.addEventListener('keydown', onSettingsScreenKeydown);
+    }
+
+    function renderDropdownOptions(container, type) {
+      const options = type === 'theme' ? themes : eras;
+      const currentIdx = type === 'theme' ? currentThemeIndex : currentEraIndex;
+
+      const panel = document.createElement('div');
+      panel.className = 'dropdown-panel';
+
+      options.forEach((opt, i) => {
+        const optRow = document.createElement('div');
+        const isHighlighted = i === dropdownHighlightIndex;
+        const isCurrent = i === currentIdx;
+        optRow.className = 'settings-row dropdown-option' + (isHighlighted ? ' selected' : '') + (isCurrent ? ' current' : '');
+        optRow.textContent = (isCurrent ? '\u2713 ' : '\u00a0\u00a0') + opt.name;
+
+        optRow.addEventListener('mouseenter', () => {
+          if (!isMouseEra()) return;
+          if (dropdownHighlightIndex === i) return;
+          dropdownHighlightIndex = i;
+          renderSettingsList();
+        });
+        optRow.addEventListener('click', (e) => {
+          if (!isMouseEra()) return;
+          e.stopPropagation();
+          if (type === 'theme') {
+            applyTheme(i);
+          } else {
+            applyEra(i);
+          }
+          openDropdownType = null;
+          renderSettingsList();
+        });
+
+        panel.appendChild(optRow);
+      });
+
+      container.appendChild(panel);
+    }
+
+    function renderSettingsList() {
+      const effectsEl = document.getElementById('settings-list-effects');
+      const themeEl = document.getElementById('settings-list-theme');
+      const eraEl = document.getElementById('settings-list-era');
+      if (!effectsEl || !themeEl || !eraEl) return;
+      effectsEl.innerHTML = '';
+      themeEl.innerHTML = '';
+      eraEl.innerHTML = '';
+
+      settingsItems.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'settings-row' + (idx === settingsSelectedIndex ? ' selected' : '');
+        const prefix = idx === settingsSelectedIndex ? '  > ' : '    ';
+
+        row.addEventListener('mouseenter', () => {
+          if (!isMouseEra()) return;
+          const dropdownWouldClose = openDropdownType && openDropdownType !== item.type;
+          if (settingsSelectedIndex === idx && !dropdownWouldClose) return;
+          settingsSelectedIndex = idx;
+          if (dropdownWouldClose) {
+            openDropdownType = null;
+          }
+          renderSettingsList();
+        });
+
+        if (item.type === 'toggle') {
+          const val = settings[item.key] ? 'ON' : 'OFF';
+          row.innerHTML = `<span>${prefix}${item.label}</span><span class="settings-val">[ ${val} ]</span>`;
+          row.addEventListener('click', () => {
+            if (!isMouseEra()) return;
+            settingsSelectedIndex = idx;
+            toggleSetting(idx);
+          });
+          effectsEl.appendChild(row);
+        } else if (item.type === 'theme' || item.type === 'era') {
+          const currentName = item.type === 'theme' ? themes[currentThemeIndex].name : eras[currentEraIndex].name;
+          const isOpen = openDropdownType === item.type;
+          row.innerHTML = `<span>${prefix}${item.label}</span><span class="settings-val dropdown-toggle">${currentName} <span class="dropdown-caret">${isOpen ? '\u25b2' : '\u25bc'}</span></span>`;
+          row.addEventListener('click', () => {
+            if (!isMouseEra()) return;
+            settingsSelectedIndex = idx;
+            openDropdown(item.type);
+          });
+          const targetEl = item.type === 'theme' ? themeEl : eraEl;
+          targetEl.appendChild(row);
+          if (isOpen) {
+            renderDropdownOptions(targetEl, item.type);
+          }
+        }
+      });
+    }
+
+    function openDropdown(type) {
+      if (openDropdownType === type) {
+        openDropdownType = null;
+      } else {
+        openDropdownType = type;
+        dropdownHighlightIndex = type === 'theme' ? currentThemeIndex : currentEraIndex;
+      }
+      renderSettingsList();
+    }
+
+    function confirmDropdownSelection() {
+      if (!openDropdownType) return;
+      if (openDropdownType === 'theme') {
+        applyTheme(dropdownHighlightIndex);
+      } else {
+        applyEra(dropdownHighlightIndex);
+      }
+      openDropdownType = null;
+      renderSettingsList();
+    }
+
+    function toggleSetting(idx) {
+      const item = settingsItems[idx];
+      if (!item || item.type !== 'toggle') return;
+      settings[item.key] = !settings[item.key];
+      applySettings();
+      renderSettingsList();
+    }
+
+    function cycleTheme(direction) {
+      applyTheme(currentThemeIndex + direction);
+      renderSettingsList();
+    }
+
+    function cycleEra(direction) {
+      applyEra(currentEraIndex + direction);
+      renderSettingsList();
+    }
+
+    function closeSettingsScreen() {
+      document.removeEventListener('keydown', onSettingsScreenKeydown);
+      openDropdownType = null;
+      const playScreen = document.getElementById('play-screen');
+      playScreen.style.display = 'none';
+      playScreen.innerHTML = '';
+
+      linesEl.style.display = '';
+      linesEl.innerHTML = '';
+      menuActive = false;
+      selectedIndex = 0;
+      showMainMenu();
+    }
+
+    function onSettingsScreenKeydown(e) {
+      // While a dropdown is open, arrow keys/enter/escape control the dropdown itself
+      if (openDropdownType) {
+        const options = openDropdownType === 'theme' ? themes : eras;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          dropdownHighlightIndex = (dropdownHighlightIndex + 1) % options.length;
+          renderSettingsList();
+          return;
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          dropdownHighlightIndex = (dropdownHighlightIndex - 1 + options.length) % options.length;
+          renderSettingsList();
+          return;
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          confirmDropdownSelection();
+          return;
+        }
+        if (e.key === 'Escape' || e.key === 'Backspace') {
+          e.preventDefault();
+          openDropdownType = null;
+          renderSettingsList();
+          return;
+        }
+        return;
+      }
+
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        closeSettingsScreen();
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        settingsSelectedIndex = (settingsSelectedIndex + 1) % settingsItems.length;
+        renderSettingsList();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        settingsSelectedIndex = (settingsSelectedIndex - 1 + settingsItems.length) % settingsItems.length;
+        renderSettingsList();
+        return;
+      }
+
+      const currentItem = settingsItems[settingsSelectedIndex];
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentItem.type === 'toggle') {
+          toggleSetting(settingsSelectedIndex);
+        } else if (currentItem.type === 'theme' || currentItem.type === 'era') {
+          openDropdown(currentItem.type);
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (currentItem.type === 'theme') {
+          cycleTheme(-1);
+        } else if (currentItem.type === 'era') {
+          cycleEra(-1);
+        } else if (currentItem.type === 'toggle') {
+          toggleSetting(settingsSelectedIndex);
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (currentItem.type === 'theme') {
+          cycleTheme(1);
+        } else if (currentItem.type === 'era') {
+          cycleEra(1);
+        } else if (currentItem.type === 'toggle') {
+          toggleSetting(settingsSelectedIndex);
+        }
+        return;
+      }
+    }
+
     let currentDataset = [];
     let filteredItems = [];
     let itemSelectedIndex = 0;
@@ -570,6 +1259,27 @@
       menuActive = false;
       selectedIndex = 0;
       showMainMenu();
+    }
+
+    function goHome() {
+      document.removeEventListener('keydown', onBrowseScreenKeydown);
+      document.removeEventListener('keydown', onSettingsScreenKeydown);
+      document.removeEventListener('keydown', onPinScreenKeydown);
+      document.removeEventListener('keydown', onMenuKeydown);
+
+      const playScreen = document.getElementById('play-screen');
+      playScreen.style.display = 'none';
+      playScreen.innerHTML = '';
+
+      linesEl.style.display = '';
+      linesEl.innerHTML = '';
+      menuActive = false;
+      selectedIndex = 0;
+      showMainMenu();
+    }
+
+    function simulateKey(key) {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
     }
 
     const returnMenuScript = [
@@ -619,6 +1329,26 @@
       }
     }
 
+    function bindItemRow(row, idx, item) {
+      row.addEventListener('mouseenter', () => {
+        if (!isMouseEra()) return;
+        if (itemSelectedIndex === idx) return;
+        itemSelectedIndex = idx;
+        const searchInput = document.getElementById('game-search');
+        updateItemFilter(searchInput ? searchInput.value.trim().toLowerCase() : "");
+      });
+      row.addEventListener('click', () => {
+        if (!isMouseEra()) return;
+        itemSelectedIndex = idx;
+        if (item.special === 'antihd') {
+          document.removeEventListener('keydown', onBrowseScreenKeydown);
+          openPinScreen();
+        } else {
+          launchAsset(item);
+        }
+      });
+    }
+
     function renderDualList(popular, newItems, indexOnly) {
       const contentEl = document.getElementById('play-screen-content');
       const headerTitle = (currentMode === "games") ? "-- Popular Hits --" : "-- Featured Software --";
@@ -626,7 +1356,7 @@
       contentEl.innerHTML = `
         <div class="section-title">${headerTitle}</div>
         <div class="game-list" id="popular-list"></div>
-        <div class="section-title">-- New Releases --</div>
+        <div class="section-title">-- New Releases --<span class="blink-badge">NEW!</span></div>
         <div class="game-list" id="new-list"></div>
         <div class="section-title">-- Index --</div>
         <div class="game-list" id="all-list"></div>
@@ -642,6 +1372,7 @@
         const row = document.createElement('div');
         row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
         row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+        bindItemRow(row, totalIdx, item);
         popList.appendChild(row);
         totalIdx++;
       });
@@ -650,6 +1381,7 @@
         const row = document.createElement('div');
         row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
         row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+        bindItemRow(row, totalIdx, item);
         newList.appendChild(row);
         totalIdx++;
       });
@@ -658,6 +1390,7 @@
         const row = document.createElement('div');
         row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
         row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+        bindItemRow(row, totalIdx, item);
         allList.appendChild(row);
         totalIdx++;
       });
@@ -680,6 +1413,7 @@
         const row = document.createElement('div');
         row.className = 'game-row' + (idx === itemSelectedIndex ? ' selected' : '');
         row.textContent = (idx === itemSelectedIndex ? '  > ' : '    ') + item.name;
+        bindItemRow(row, idx, item);
         searchList.appendChild(row);
       });
     }
@@ -875,10 +1609,21 @@
 
     function renderMenu(container) {
       container.innerHTML = '';
-      menuOptions.forEach((opt, idx) => {
+      getMenuOptions().forEach((opt, idx) => {
         const row = document.createElement('div');
         row.className = 'menu-row' + (idx === selectedIndex ? ' selected' : '');
         row.textContent = (idx === selectedIndex ? '  > ' : '    ') + opt.label;
+        row.addEventListener('mouseenter', () => {
+          if (!isMouseEra() || !menuActive) return;
+          if (selectedIndex === idx) return;
+          selectedIndex = idx;
+          renderMenu(container);
+        });
+        row.addEventListener('click', () => {
+          if (!isMouseEra() || !menuActive) return;
+          selectedIndex = idx;
+          handleSelection(opt.action);
+        });
         container.appendChild(row);
       });
     }
@@ -886,17 +1631,18 @@
     function onMenuKeydown(e) {
       if (!menuActive) return;
       const menuEl = document.getElementById('menu-list');
+      const visibleOptions = getMenuOptions();
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        selectedIndex = (selectedIndex + 1) % menuOptions.length;
+        selectedIndex = (selectedIndex + 1) % visibleOptions.length;
         renderMenu(menuEl);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        selectedIndex = (selectedIndex - 1 + menuOptions.length) % menuOptions.length;
+        selectedIndex = (selectedIndex - 1 + visibleOptions.length) % visibleOptions.length;
         renderMenu(menuEl);
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        handleSelection(menuOptions[selectedIndex].action);
+        handleSelection(visibleOptions[selectedIndex].action);
       }
     }
 
@@ -949,6 +1695,45 @@
 
     setTimeout(runScript, 350);
     setTimeout(() => hintEl.classList.add('shown'), 600);
+
+    // ---- XP-era fake browser chrome interactivity ----
+    const xpBackBtn = document.querySelector('.xp-tool-back');
+    if (xpBackBtn) {
+      xpBackBtn.addEventListener('click', () => simulateKey('Backspace'));
+    }
+
+    const xpHomeBtn = document.querySelector('.xp-tool-home');
+    if (xpHomeBtn) {
+      xpHomeBtn.addEventListener('click', () => goHome());
+    }
+
+    const xpMinBtn = document.querySelector('.xp-btn-min');
+    if (xpMinBtn) {
+      xpMinBtn.addEventListener('click', () => {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+    }
+
+    const xpMaxBtn = document.querySelector('.xp-btn-max');
+    if (xpMaxBtn) {
+      xpMaxBtn.addEventListener('click', () => {
+        fullscreenRequested = true;
+        hintEl.classList.remove('shown');
+        doRequestFullscreen();
+      });
+    }
+
+    const xpCloseBtn = document.querySelector('.xp-btn-close');
+    if (xpCloseBtn) {
+      xpCloseBtn.addEventListener('click', () => {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        try { window.close(); } catch (err) {}
+      });
+    }
   </script>
 
   </body>
