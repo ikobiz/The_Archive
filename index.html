@@ -414,7 +414,9 @@
       font-weight: bold;
     }
 
-    /* ---------------- Modern = Ubuntu (Yaru) desktop ---------------- */
+    /* ============================================================
+       MODERN ERA — Ubuntu (Yaru) desktop
+       ============================================================ */
     body.era-modern {
       background:
         radial-gradient(ellipse at 25% 15%, #6b3a63 0%, transparent 45%),
@@ -422,7 +424,6 @@
         linear-gradient(160deg, #2c001e 0%, #4a1638 40%, #2c001e 100%);
     }
 
-    /* the app window itself: inset from the OS chrome, floating on the wallpaper */
     body.era-modern .crt {
       top: 40px;
       left: 68px;
@@ -430,7 +431,22 @@
       bottom: 22px;
       background: #F6F5F4;
       box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35);
+      border-radius: 10px;
+      animation: none;
     }
+    body.era-modern .crt.maximized-window {
+      top: 28px;
+      left: 56px;
+      right: 0;
+      bottom: 0;
+      border-radius: 0;
+    }
+    body.era-modern .crt.minimized-window {
+      transform: scale(0.85) translateY(40px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
     body.era-modern .lines, body.era-modern .play-screen {
       font-family: 'Ubuntu', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       color: #2c2c2c;
@@ -468,7 +484,7 @@
       border-radius: 6px;
     }
 
-    /* GNOME top bar + dock (OS chrome, sits outside the window) */
+    /* ---- GNOME top bar ---- */
     .gnome-topbar, .gnome-dock { display: none; }
     body.era-modern .gnome-topbar, body.era-modern .gnome-dock { display: flex; }
 
@@ -476,85 +492,167 @@
       position: fixed;
       top: 0; left: 0; right: 0;
       height: 28px;
-      background: #2c001e;
-      color: #fff;
+      background: #1a0010;
+      color: rgba(255,255,255,0.92);
       align-items: center;
       justify-content: space-between;
-      padding: 0 14px;
+      padding: 0 12px;
       font-family: 'Ubuntu', -apple-system, sans-serif;
       font-size: 12px;
-      z-index: 40;
+      z-index: 200;
+      user-select: none;
     }
-    .gnome-topbar-left, .gnome-topbar-right { display: flex; align-items: center; gap: 14px; }
+    .gnome-topbar-left { display: flex; align-items: center; gap: 2px; }
+    .gnome-topbar-right { display: flex; align-items: center; gap: 6px; }
+
+    /* topbar clickable items */
+    .gnome-tb-item {
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .gnome-tb-item:hover { background: rgba(255,255,255,0.12); }
+    .gnome-tb-item:active { background: rgba(255,255,255,0.2); }
+    .gnome-tb-item.active-panel { background: rgba(255,255,255,0.18); }
+
     .gnome-clock {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
+      cursor: pointer;
+      padding: 2px 10px;
+      border-radius: 4px;
+      transition: background 0.15s;
       font-weight: 500;
     }
-    .gnome-topbar-icon { opacity: 0.9; font-size: 13px; }
-    .gnome-power-btn { cursor: pointer; }
-    .gnome-power-btn:hover { opacity: 0.65; }
+    .gnome-clock:hover { background: rgba(255,255,255,0.12); }
+    .gnome-clock.active-panel { background: rgba(255,255,255,0.18); }
 
+    /* ---- system tray icons ---- */
+    .gnome-tray-icon {
+      font-size: 14px;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      opacity: 0.88;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .gnome-tray-icon:hover { background: rgba(255,255,255,0.12); opacity: 1; }
+
+    /* ---- GNOME dock ---- */
     .gnome-dock {
       position: fixed;
       top: 28px; left: 0; bottom: 0;
       width: 56px;
-      background: rgba(44, 0, 30, 0.94);
+      background: rgba(20, 0, 14, 0.93);
       flex-direction: column;
       align-items: center;
-      padding: 10px 0;
-      gap: 10px;
-      z-index: 40;
+      padding: 10px 0 8px;
+      gap: 6px;
+      z-index: 200;
+      border-right: 1px solid rgba(255,255,255,0.06);
     }
     .gnome-dock-icon {
-      width: 40px; height: 40px;
+      width: 42px; height: 42px;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 19px;
-      background: rgba(255, 255, 255, 0.06);
+      font-size: 20px;
+      background: rgba(255,255,255,0.06);
       position: relative;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.12s;
+      user-select: none;
     }
+    .gnome-dock-icon:hover {
+      background: rgba(255,255,255,0.16);
+      transform: scale(1.06);
+    }
+    .gnome-dock-icon:active { transform: scale(0.94); }
     .gnome-dock-icon.active::before {
       content: "";
       position: absolute;
-      left: -10px; top: 50%;
+      left: -8px; top: 50%;
       transform: translateY(-50%);
       width: 4px; height: 22px;
       background: #E95420;
       border-radius: 0 3px 3px 0;
     }
-    .gnome-dock-icon.clickable { cursor: pointer; }
-    .gnome-dock-icon.clickable:hover { background: rgba(255, 255, 255, 0.16); }
+    /* tooltip */
+    .gnome-dock-icon::after {
+      content: attr(data-label);
+      position: absolute;
+      left: 52px;
+      background: rgba(20,0,14,0.95);
+      color: #fff;
+      font-family: 'Ubuntu', sans-serif;
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 5px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+      z-index: 300;
+    }
+    .gnome-dock-icon:hover::after { opacity: 1; }
+
+    .gnome-dock-separator {
+      width: 32px; height: 1px;
+      background: rgba(255,255,255,0.14);
+      margin: 3px 0;
+      flex-shrink: 0;
+    }
     .gnome-dock-spacer { flex: 1; }
 
-    /* GNOME/Yaru window header bar (the app's own title bar, inside the window) */
+    /* ---- window header bar ---- */
     .gnome-header { display: none; }
     body.era-modern .gnome-header { display: flex; }
     .gnome-header {
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 42px;
+      height: 46px;
       background: #EBEAE8;
-      border-bottom: 1px solid #d7d6d2;
+      border-bottom: 1px solid #d4d3cf;
       border-radius: 10px 10px 0 0;
       align-items: center;
-      padding: 0 10px;
+      padding: 0 12px;
       font-family: 'Ubuntu', -apple-system, sans-serif;
       z-index: 25;
+      gap: 10px;
+      user-select: none;
+    }
+    body.era-modern .crt.maximized-window .gnome-header {
+      border-radius: 0;
     }
     .gnome-header-left {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #3c3c3c;
-      font-size: 13px;
-      font-weight: 500;
-      min-width: 90px;
+      min-width: 100px;
     }
-    .gnome-header-icon { font-size: 16px; }
+    .gnome-wm-buttons { display: flex; gap: 6px; align-items: center; }
+    .gnome-wm-btn {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: none;
+      outline: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 9px;
+      transition: filter 0.12s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .gnome-wm-btn:hover { filter: brightness(0.82); }
+    .gnome-wm-btn:active { transform: scale(0.88); filter: brightness(0.7); }
+    .gnome-wm-btn-close { background: #E95420; color: #7d1e06; }
+    .gnome-wm-btn-min   { background: #c8c6c2; color: #666; }
+    .gnome-wm-btn-max   { background: #c8c6c2; color: #666; }
+
     .gnome-header-title {
       flex: 1;
       text-align: center;
@@ -562,24 +660,241 @@
       font-size: 13px;
       font-weight: 500;
     }
-    .gnome-header-btns { display: flex; gap: 4px; min-width: 90px; justify-content: flex-end; }
-    .gnome-btn {
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      display: flex;
+    .gnome-header-right {
+      display: flex; gap: 5px; min-width: 100px; justify-content: flex-end;
       align-items: center;
-      justify-content: center;
+    }
+    .gnome-hdr-btn {
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #f6f5f4;
       font-size: 12px;
+      font-family: 'Ubuntu', sans-serif;
+      cursor: pointer;
       color: #3c3c3c;
+      display: flex; align-items: center; gap: 5px;
+      transition: background 0.12s;
+    }
+    .gnome-hdr-btn:hover { background: #e4e3e0; }
+    .gnome-hdr-btn:active { background: #d9d8d5; }
+
+    /* ---- GNOME notification toasts ---- */
+    .gnome-notif-tray {
+      display: none;
+      position: fixed;
+      top: 36px; right: 16px;
+      width: 320px;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 500;
+      pointer-events: none;
+    }
+    body.era-modern .gnome-notif-tray { display: flex; }
+
+    .gnome-notif {
+      background: rgba(22,0,16,0.95);
+      border-radius: 10px;
+      padding: 11px 13px;
+      color: #fff;
+      font-family: 'Ubuntu', sans-serif;
+      font-size: 12px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.45);
+      display: flex; gap: 10px; align-items: flex-start;
+      pointer-events: all;
+      animation: gnome-notif-in 0.22s ease;
+      transition: opacity 0.35s, transform 0.35s;
+    }
+    @keyframes gnome-notif-in {
+      from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+    .gnome-notif.dismissing { opacity: 0; transform: translateY(-8px) scale(0.96); }
+    .gnome-notif-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .gnome-notif-body { flex: 1; }
+    .gnome-notif-app  { font-size: 10px; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+    .gnome-notif-title{ font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
+    .gnome-notif-msg  { opacity: 0.75; line-height: 1.4; }
+    .gnome-notif-close{ opacity: 0.45; cursor: pointer; font-size: 13px; flex-shrink: 0; line-height: 1; transition: opacity 0.12s; }
+    .gnome-notif-close:hover { opacity: 1; }
+
+    /* ---- Calendar popup ---- */
+    .gnome-cal-popup {
+      display: none;
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e0018;
+      border-radius: 10px;
+      padding: 16px 18px;
+      z-index: 400;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+      color: #fff;
+      font-family: 'Ubuntu', sans-serif;
+      min-width: 230px;
+      animation: gnome-popup-in 0.18s ease;
+    }
+    body.era-modern .gnome-cal-popup { display: none; }
+    body.era-modern .gnome-cal-popup.open { display: block; }
+    @keyframes gnome-popup-in {
+      from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .gnome-cal-month {
+      font-size: 13px; font-weight: 500;
+      text-align: center; margin-bottom: 10px;
+    }
+    .gnome-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      font-size: 11px;
+    }
+    .gnome-cal-hdr { text-align: center; opacity: 0.45; padding: 3px 0; }
+    .gnome-cal-day {
+      text-align: center; padding: 4px 2px;
+      border-radius: 4px; cursor: default;
+    }
+    .gnome-cal-day.today { background: #E95420; font-weight: 500; }
+    .gnome-cal-day.other-month { opacity: 0.28; }
+
+    /* ---- Quick settings panel ---- */
+    .gnome-qs-panel {
+      display: none;
+      position: fixed;
+      top: 30px; right: 0;
+      width: 284px;
+      background: #1e0018;
+      border-radius: 10px 0 0 10px;
+      padding: 16px;
+      z-index: 400;
+      box-shadow: -4px 4px 24px rgba(0,0,0,0.55);
+      color: #fff;
+      font-family: 'Ubuntu', sans-serif;
+      flex-direction: column;
+      gap: 12px;
+      animation: gnome-qs-in 0.18s ease;
+    }
+    body.era-modern .gnome-qs-panel { display: none; }
+    body.era-modern .gnome-qs-panel.open { display: flex; }
+    @keyframes gnome-qs-in {
+      from { opacity: 0; transform: translateX(12px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .gnome-qs-section {
+      font-size: 10px; opacity: 0.5;
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .gnome-qs-tiles { display: flex; gap: 8px; }
+    .gnome-qs-tile {
+      flex: 1; min-width: 0;
+      background: rgba(255,255,255,0.09);
+      border-radius: 8px;
+      padding: 9px 11px;
+      display: flex; align-items: center; gap: 7px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .gnome-qs-tile.on { background: rgba(233,84,32,0.35); }
+    .gnome-qs-tile:hover { background: rgba(255,255,255,0.17); }
+    .gnome-qs-tile.on:hover { background: rgba(233,84,32,0.5); }
+    .gnome-qs-tile-icon { font-size: 15px; }
+    .gnome-qs-slider-group { display: flex; flex-direction: column; gap: 6px; }
+    .gnome-qs-slider-label { font-size: 11px; opacity: 0.55; }
+    .gnome-qs-slider {
+      width: 100%;
+      accent-color: #E95420;
       cursor: pointer;
     }
-    .gnome-btn:hover { background: rgba(0, 0, 0, 0.08); }
+    .gnome-qs-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+    .gnome-qs-user { font-size: 12px; opacity: 0.75; }
+    .gnome-qs-power {
+      background: none; border: none; color: rgba(255,255,255,0.65);
+      font-size: 18px; cursor: pointer;
+      transition: color 0.12s;
+      line-height: 1;
+    }
+    .gnome-qs-power:hover { color: #fff; }
 
-    /* ---------------- UI ERAS (shared: 2000's / 2010's / Modern have no CRT look) ---------------- */
+    /* ---- App drawer / Activities overlay ---- */
+    .gnome-app-drawer {
+      display: none;
+      position: fixed;
+      top: 28px; left: 56px; right: 0; bottom: 0;
+      background: rgba(20,0,14,0.9);
+      z-index: 300;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 20px 20px;
+      gap: 20px;
+      animation: gnome-drawer-in 0.2s ease;
+    }
+    body.era-modern .gnome-app-drawer { display: none; }
+    body.era-modern .gnome-app-drawer.open { display: flex; }
+    @keyframes gnome-drawer-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .gnome-drawer-search {
+      width: 300px; height: 36px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.11);
+      border: 1px solid rgba(255,255,255,0.18);
+      outline: none;
+      color: #fff;
+      font-family: 'Ubuntu', sans-serif;
+      font-size: 14px;
+      padding: 0 16px;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    .gnome-drawer-search:focus { background: rgba(255,255,255,0.18); }
+    .gnome-drawer-search::placeholder { color: rgba(255,255,255,0.45); }
+    .gnome-drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 72px);
+      gap: 14px;
+    }
+    .gnome-drawer-app {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .gnome-drawer-app:hover { background: rgba(255,255,255,0.1); }
+    .gnome-drawer-app:active { background: rgba(255,255,255,0.18); }
+    .gnome-drawer-app-icon { font-size: 28px; line-height: 1; }
+    .gnome-drawer-app-label {
+      color: rgba(255,255,255,0.88);
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.25;
+      font-family: 'Ubuntu', sans-serif;
+    }
+    .gnome-drawer-hint {
+      color: rgba(255,255,255,0.35);
+      font-size: 11px;
+      font-family: 'Ubuntu', sans-serif;
+      margin-top: 4px;
+    }
+
+    /* ============================================================
+       SHARED non-CRT era rules
+       ============================================================ */
     body.era-modern .crt,
     body.era-2000s .crt,
     body.era-2010s .crt {
-      border-radius: 10px;
       animation: none;
     }
     body.era-2000s .crt, body.era-2010s .crt {
@@ -608,7 +923,7 @@
       animation: none;
     }
 
-    /* 2000's (Windows XP Luna / Web 1.0) */
+    /* ---- 2000s (Windows XP / Web 1.0) ---- */
     body.era-2000s .crt {
       background:
         repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 2px, transparent 2px, transparent 42px),
@@ -621,14 +936,9 @@
       font-size: 13px;
     }
 
-    /* fake browser chrome */
     .xp-titlebar, .xp-toolbar { display: none; }
-    body.era-2000s .xp-titlebar, body.era-2000s .xp-toolbar {
-      display: flex;
-    }
-    body.era-2000s .terminal {
-      padding-top: calc(4vh + 58px);
-    }
+    body.era-2000s .xp-titlebar, body.era-2000s .xp-toolbar { display: flex; }
+    body.era-2000s .terminal { padding-top: calc(4vh + 58px); }
 
     .xp-titlebar {
       position: absolute;
@@ -647,8 +957,8 @@
       font-weight: bold;
       border-radius: 8px 8px 0 0;
       z-index: 20;
-      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
     }
     .xp-titlebar-left { display: flex; align-items: center; gap: 5px; }
     .xp-titlebar-btns { display: flex; gap: 2px; }
@@ -687,7 +997,7 @@
       flex: 1;
       background: #fff;
       border: 1px solid #7f9db9;
-      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.25);
+      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.25);
       padding: 2px 6px;
       font-size: 11px;
       color: #333;
@@ -708,7 +1018,6 @@
       cursor: pointer;
     }
 
-    /* groupbox-style section headers */
     body.era-2000s .section-title {
       background: linear-gradient(to bottom,
         color-mix(in srgb, var(--fg) 60%, white),
@@ -717,7 +1026,7 @@
       padding: 3px 8px;
       border-radius: 3px;
       font-weight: bold;
-      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35);
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.35);
       border: 1px solid color-mix(in srgb, var(--fg) 65%, black);
       letter-spacing: 0.03em;
       opacity: 1;
@@ -730,14 +1039,11 @@
       margin-left: 8px;
       color: #ffff33;
       font-weight: bold;
-      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.6);
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.6);
       animation: blink-badge-flash 1s steps(1) infinite;
     }
-    @keyframes blink-badge-flash {
-      50% { opacity: 0; }
-    }
+    @keyframes blink-badge-flash { 50% { opacity: 0; } }
 
-    /* 3D beveled rows, Windows-button style */
     body.era-2000s .menu-row, body.era-2000s .game-row, body.era-2000s .settings-row {
       background: linear-gradient(to bottom, #fefefe, #ece9d8);
       border-top: 1px solid #fff;
@@ -754,19 +1060,18 @@
       color: #fff;
       border: 1px solid color-mix(in srgb, var(--fg) 70%, black);
       text-shadow: none;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
     }
     body.era-2000s #game-search {
       background: #fff;
       border: 1px solid #7f9db9;
-      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.25);
+      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.25);
       color: #000;
       font-family: Verdana, Tahoma, sans-serif;
       padding: 3px 6px;
     }
     body.era-2000s .pin-dot { border-color: var(--fg); color: #000; background: #fff; }
     body.era-2000s .pin-dot.filled::after { color: #000; text-shadow: none; }
-
     body.era-2000s #play-screen-content::-webkit-scrollbar { width: 16px; }
     body.era-2000s #play-screen-content::-webkit-scrollbar-track {
       background: #ece9d8;
@@ -777,7 +1082,7 @@
       border: 1px solid #9a9a8c;
     }
 
-    /* 2010's (flat / early Bootstrap) */
+    /* ---- 2010s (flat / early Bootstrap) ---- */
     body.era-2010s .crt { background: #eef1f5; }
     body.era-2010s .lines, body.era-2010s .play-screen {
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -789,29 +1094,158 @@
       border-radius: 4px;
       padding: 6px 10px;
       margin-bottom: 4px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
     }
     body.era-2010s .menu-row.selected, body.era-2010s .game-row.selected, body.era-2010s .settings-row.selected {
       background: #2980b9;
       color: #fff;
       text-shadow: none;
-      box-shadow: 0 2px 6px rgba(41, 128, 185, 0.4);
+      box-shadow: 0 2px 6px rgba(41,128,185,0.4);
     }
     body.era-2010s #game-search { border-bottom-color: #2980b9; color: #2c3e50; }
     body.era-2010s .section-title { color: #7f8c8d; opacity: 1; }
     body.era-2010s .pin-dot { border-color: #2980b9; color: #2980b9; }
     body.era-2010s .pin-dot.filled::after { color: #2980b9; text-shadow: none; }
 
-    /* Mouse navigation affordances (Modern / 2000's / 2010's only) */
+    /* ============================================================
+       DMS TERMINAL EASTER EGG
+       ============================================================ */
+    .dms-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 600;
+      background: rgba(0,0,0,0.72);
+      align-items: center;
+      justify-content: center;
+      animation: dms-fade-in 0.2s ease;
+    }
+    body.era-modern .dms-overlay { display: none; }
+    body.era-modern .dms-overlay.open { display: flex; }
+    @keyframes dms-fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .dms-window {
+      width: min(680px, 94vw);
+      height: min(480px, 88vh);
+      background: #0a0a0a;
+      border-radius: 8px;
+      box-shadow: 0 0 0 1px #222, 0 0 60px rgba(0,200,80,0.18), 0 24px 60px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+      font-size: 13px;
+      animation: dms-window-in 0.22s cubic-bezier(0.22,1,0.36,1);
+    }
+    @keyframes dms-window-in {
+      from { transform: scale(0.93) translateY(18px); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
+
+    .dms-titlebar {
+      height: 30px;
+      background: #111;
+      border-bottom: 1px solid #1e1e1e;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .dms-tb-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: filter 0.12s;
+    }
+    .dms-tb-dot:hover { filter: brightness(1.3); }
+    .dms-tb-dot-close  { background: #E95420; }
+    .dms-tb-dot-min    { background: #555; }
+    .dms-tb-dot-max    { background: #555; }
+    .dms-tb-title {
+      flex: 1; text-align: center;
+      color: #555;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    .dms-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px 8px;
+      color: #00cc55;
+      line-height: 1.6;
+      scrollbar-width: thin;
+      scrollbar-color: #1e1e1e transparent;
+    }
+    .dms-body::-webkit-scrollbar { width: 5px; }
+    .dms-body::-webkit-scrollbar-thumb { background: #1e1e1e; }
+
+    .dms-ascii {
+      color: #009933;
+      font-size: clamp(7px, 1.1vw, 11px);
+      line-height: 1.25;
+      white-space: pre;
+      margin-bottom: 14px;
+      text-shadow: 0 0 6px rgba(0,200,80,0.4);
+    }
+    .dms-line { display: block; min-height: 1.6em; }
+    .dms-dim  { color: #336644; }
+    .dms-bright { color: #00ff66; text-shadow: 0 0 5px rgba(0,255,100,0.5); }
+    .dms-err  { color: #cc3322; }
+    .dms-warn { color: #aaaa00; }
+    .dms-sep  { color: #1a3322; user-select: none; }
+
+    .dms-input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px 14px;
+      border-top: 1px solid #111;
+      flex-shrink: 0;
+    }
+    .dms-prompt { color: #00cc55; user-select: none; white-space: nowrap; font-size: 13px; }
+    .dms-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #00ff66;
+      font-family: inherit;
+      font-size: 13px;
+      caret-color: #00ff66;
+      letter-spacing: 0.02em;
+    }
+    .dms-input::placeholder { color: #1e4433; }
+    .dms-input:disabled { opacity: 0.4; }
+
+    /* login stages */
+    .dms-field-label { color: #557766; }
+    .dms-cursor {
+      display: inline-block;
+      width: 0.55em; height: 1em;
+      background: #00cc55;
+      vertical-align: text-bottom;
+      animation: dms-blink 1s step-end infinite;
+    }
+    @keyframes dms-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* ---- Mouse nav hover affordances ---- */
     body.mouse-nav .menu-row,
     body.mouse-nav .game-row,
-    body.mouse-nav .settings-row {
-      cursor: pointer;
-    }
+    body.mouse-nav .settings-row { cursor: pointer; }
+
     body.era-modern.mouse-nav .menu-row:hover:not(.selected),
     body.era-modern.mouse-nav .game-row:hover:not(.selected),
     body.era-modern.mouse-nav .settings-row:hover:not(.selected) {
-      background: rgba(233, 84, 32, 0.10);
+      background: rgba(233,84,32,0.10);
       border-radius: 6px;
     }
     body.era-2000s.mouse-nav .menu-row:hover:not(.selected),
@@ -830,40 +1264,148 @@
   </style>
   </head>
   <body>
+
+  <!-- ============================================================
+       GNOME OS chrome (only visible in era-modern)
+       ============================================================ -->
+
+  <!-- Top bar -->
   <div class="gnome-topbar" id="gnome-topbar">
-    <span class="gnome-topbar-left">
-      <span class="gnome-topbar-icon">🗂</span>
-      <span>The ArchIve</span>
-    </span>
-    <span class="gnome-clock" id="gnome-clock">Mon 00:00</span>
-    <span class="gnome-topbar-right">
-      <span class="gnome-topbar-icon">📶</span>
-      <span class="gnome-topbar-icon">🔊</span>
-      <span class="gnome-topbar-icon">🔋</span>
-      <span class="gnome-topbar-icon gnome-power-btn" id="gnome-power-btn">⏻</span>
-    </span>
-  </div>
-  <div class="gnome-dock" id="gnome-dock">
-    <span class="gnome-dock-icon">🗃</span>
-    <span class="gnome-dock-icon">🌐</span>
-    <span class="gnome-dock-icon active clickable" id="gnome-dock-home">🎮</span>
-    <span class="gnome-dock-icon clickable" id="gnome-dock-settings">⚙</span>
-    <span class="gnome-dock-spacer"></span>
-    <span class="gnome-dock-icon">🗑</span>
-  </div>
-  <div class="crt">
-    <div class="gnome-header" id="gnome-header">
-      <span class="gnome-header-left">
-        <span class="gnome-header-icon">🗂</span>
-        <span>Files</span>
-      </span>
-      <span class="gnome-header-title">The ArchIve</span>
-      <span class="gnome-header-btns">
-        <span class="gnome-btn gnome-btn-min">—</span>
-        <span class="gnome-btn gnome-btn-max">▢</span>
-        <span class="gnome-btn gnome-btn-close">✕</span>
-      </span>
+    <div class="gnome-topbar-left">
+      <span class="gnome-tb-item" id="gnome-activities">Activities</span>
+      <span class="gnome-tb-item" id="gnome-app-menu">The ArchIve</span>
     </div>
+    <span class="gnome-clock" id="gnome-clock">Mon 00:00</span>
+    <div class="gnome-topbar-right">
+      <span class="gnome-tray-icon" id="gnome-tray-wifi" title="Wi-Fi">📶</span>
+      <span class="gnome-tray-icon" id="gnome-tray-vol"  title="Volume">🔊</span>
+      <span class="gnome-tray-icon" id="gnome-tray-batt" title="Battery">🔋</span>
+      <span class="gnome-tray-icon" id="gnome-tray-qs"   title="Quick settings">⌄</span>
+    </div>
+  </div>
+
+  <!-- Dock -->
+  <div class="gnome-dock" id="gnome-dock">
+    <div class="gnome-dock-icon" id="gnome-dock-files"    data-label="Files">🗃</div>
+    <div class="gnome-dock-icon" id="gnome-dock-browser"  data-label="Firefox">🌐</div>
+    <div class="gnome-dock-icon active" id="gnome-dock-home" data-label="The ArchIve">🎮</div>
+    <div class="gnome-dock-icon" id="gnome-dock-terminal" data-label="Terminal">🖥</div>
+    <div class="gnome-dock-separator"></div>
+    <div class="gnome-dock-icon" id="gnome-dock-settings" data-label="Settings">⚙</div>
+    <div class="gnome-dock-spacer"></div>
+    <div class="gnome-dock-icon" id="gnome-dock-trash"    data-label="Trash (empty)">🗑</div>
+  </div>
+
+  <!-- Notification toasts -->
+  <div class="gnome-notif-tray" id="gnome-notif-tray"></div>
+
+  <!-- Calendar popup (toggled by clock click) -->
+  <div class="gnome-cal-popup" id="gnome-cal-popup">
+    <div class="gnome-cal-month" id="gnome-cal-month"></div>
+    <div class="gnome-cal-grid"  id="gnome-cal-grid"></div>
+  </div>
+
+  <!-- Quick settings panel (toggled by tray area) -->
+  <div class="gnome-qs-panel" id="gnome-qs-panel">
+    <div class="gnome-qs-section">Quick settings</div>
+    <div class="gnome-qs-tiles">
+      <div class="gnome-qs-tile on" id="gnome-qs-wifi" data-label="Wi-Fi">
+        <span class="gnome-qs-tile-icon">📶</span><span>Wi-Fi</span>
+      </div>
+      <div class="gnome-qs-tile on" id="gnome-qs-bt" data-label="Bluetooth">
+        <span class="gnome-qs-tile-icon">🔷</span><span>Bluetooth</span>
+      </div>
+    </div>
+    <div class="gnome-qs-tiles">
+      <div class="gnome-qs-tile" id="gnome-qs-dnd" data-label="Do Not Disturb">
+        <span class="gnome-qs-tile-icon">🔕</span><span>Do Not Disturb</span>
+      </div>
+      <div class="gnome-qs-tile" id="gnome-qs-dark" data-label="Dark Mode">
+        <span class="gnome-qs-tile-icon">🌙</span><span>Dark Mode</span>
+      </div>
+    </div>
+    <div class="gnome-qs-slider-group">
+      <div class="gnome-qs-slider-label">🔊 Volume</div>
+      <input type="range" class="gnome-qs-slider" min="0" max="100" value="75" />
+    </div>
+    <div class="gnome-qs-slider-group">
+      <div class="gnome-qs-slider-label">☀ Brightness</div>
+      <input type="range" class="gnome-qs-slider" min="0" max="100" value="90" />
+    </div>
+    <div class="gnome-qs-footer">
+      <span class="gnome-qs-user">👤 user@ubuntu</span>
+      <button class="gnome-qs-power" id="gnome-qs-power" title="Power options">⏻</button>
+    </div>
+  </div>
+
+  <!-- App drawer / Activities overlay -->
+  <div class="gnome-app-drawer" id="gnome-app-drawer">
+    <input class="gnome-drawer-search" id="gnome-drawer-search" placeholder="Type to search…" />
+    <div class="gnome-drawer-grid" id="gnome-drawer-grid">
+      <div class="gnome-drawer-app" data-name="The ArchIve" data-icon="🎮" data-action="home">
+        <div class="gnome-drawer-app-icon">🎮</div>
+        <div class="gnome-drawer-app-label">The ArchIve</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Firefox" data-icon="🌐" data-action="notif">
+        <div class="gnome-drawer-app-icon">🌐</div>
+        <div class="gnome-drawer-app-label">Firefox</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Terminal" data-icon="🖥" data-action="terminal">
+        <div class="gnome-drawer-app-icon">🖥</div>
+        <div class="gnome-drawer-app-label">Terminal</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Files" data-icon="🗃" data-action="notif">
+        <div class="gnome-drawer-app-icon">🗃</div>
+        <div class="gnome-drawer-app-label">Files</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Settings" data-icon="⚙" data-action="settings">
+        <div class="gnome-drawer-app-icon">⚙</div>
+        <div class="gnome-drawer-app-label">Settings</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Text Editor" data-icon="📝" data-action="notif">
+        <div class="gnome-drawer-app-icon">📝</div>
+        <div class="gnome-drawer-app-label">Text Editor</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Calculator" data-icon="🧮" data-action="notif">
+        <div class="gnome-drawer-app-icon">🧮</div>
+        <div class="gnome-drawer-app-label">Calculator</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Calendar" data-icon="📅" data-action="notif">
+        <div class="gnome-drawer-app-icon">📅</div>
+        <div class="gnome-drawer-app-label">Calendar</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Camera" data-icon="📷" data-action="notif">
+        <div class="gnome-drawer-app-icon">📷</div>
+        <div class="gnome-drawer-app-label">Camera</div>
+      </div>
+      <div class="gnome-drawer-app" data-name="Maps" data-icon="🗺" data-action="notif">
+        <div class="gnome-drawer-app-icon">🗺</div>
+        <div class="gnome-drawer-app-label">Maps</div>
+      </div>
+    </div>
+    <div class="gnome-drawer-hint">Press Esc or click outside to close</div>
+  </div>
+
+  <!-- ============================================================
+       XP chrome (only visible in era-2000s)
+       ============================================================ -->
+  <div class="crt" id="main-crt">
+    <div class="gnome-header" id="gnome-header">
+      <div class="gnome-header-left">
+        <div class="gnome-wm-buttons">
+          <button class="gnome-wm-btn gnome-wm-btn-close" id="gnome-btn-close" title="Close">✕</button>
+          <button class="gnome-wm-btn gnome-wm-btn-min"   id="gnome-btn-min"   title="Minimize">−</button>
+          <button class="gnome-wm-btn gnome-wm-btn-max"   id="gnome-btn-max"   title="Maximize">▢</button>
+        </div>
+      </div>
+      <span class="gnome-header-title">The ArchIve</span>
+      <div class="gnome-header-right">
+        <button class="gnome-hdr-btn" id="gnome-hdr-games"    title="Browse Games">🎮 Games</button>
+        <button class="gnome-hdr-btn" id="gnome-hdr-software" title="Browse Software">💾 Software</button>
+        <button class="gnome-hdr-btn" id="gnome-hdr-menu"     title="Menu">☰</button>
+      </div>
+    </div>
+
     <div class="xp-titlebar" id="xp-titlebar">
       <span class="xp-titlebar-left">
         <span class="xp-titlebar-icon">🗂</span>
@@ -883,6 +1425,7 @@
       <span class="xp-addressbar">Address:&nbsp;<b>C:\ArchIve\index.html</b></span>
       <span class="xp-go">Go</span>
     </div>
+
     <div class="crt-roll"></div>
     <div class="terminal-wrap">
       <div class="terminal">
@@ -895,66 +1438,87 @@
     <div class="crt-noise"></div>
     <div class="hint" id="hint">[ press any key to enter fullscreen ]</div>
   </div>
+
+  <!-- DMS Terminal Easter Egg -->
+  <div class="dms-overlay" id="dms-overlay">
+    <div class="dms-window" id="dms-window">
+      <div class="dms-titlebar">
+        <div class="dms-tb-dot dms-tb-dot-close" id="dms-close-btn"></div>
+        <div class="dms-tb-dot dms-tb-dot-min"></div>
+        <div class="dms-tb-dot dms-tb-dot-max"></div>
+        <div class="dms-tb-title">Terminal — bash</div>
+      </div>
+      <div class="dms-body" id="dms-body"></div>
+      <div class="dms-input-row" id="dms-input-row">
+        <span class="dms-prompt" id="dms-prompt">login: </span>
+        <input class="dms-input" id="dms-input" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+  </div>
+
   <script>
+    /* ============================================================
+       DATA
+       ============================================================ */
     const games = [
-      { name: "doodlejump", url: "game-assets/DJ.html", popular: false, newRelease: false, hidden: false },
-      { name: "2048", url: "game-assets/2048.html", popular: false, newRelease: false, hidden: false },
-      { name: "drivemad", url: "game-assets/DM.html", popular: true, newRelease: false, hidden: false },
-      { name: "driftboss", url: "game-assets/DB.html", popular: true, newRelease: false, hidden: false },
-      { name: "minesweeper", url: "game-assets/minesweeper.html", popular: false, newRelease: false, hidden: true },
-      { name: "escaperoad2", url: "game-assets/ER2.html", popular: true, newRelease: false, hidden: false },
-      { name: "escaperoad3", url: "game-assets/ER3.html", popular: true, newRelease: false, hidden: false },
-      { name: "driveinrussia", url: "game-assets/DR.html", popular: false, newRelease: false, hidden: false },
-      { name: "escaperoad", url: "game-assets/ER1.html", popular: false, newRelease: false, hidden: false },
-      { name: "baldisbasics", url: "game-assets/BB.html", popular: false, newRelease: false, hidden: false },
-      { name: "baseballbros", url: "game-assets/BB2.html", popular: true, newRelease: false, hidden: false },
-      { name: "Subway Surfers", url: "game-assets/SS.html", popular: true, newRelease: false, hidden: false },
-      { name: "Car King Arena", url: "game-assets/CKA.html", popular: true, newRelease: false, hidden: false },
-      { name: "Smashkarts", url: "game-assets/SK.html", popular: true, newRelease: false, hidden: false },
-      { name: "Minecraft - Wurst Client", url: "game-assets/WC.html", popular: false, newRelease: false, hidden: false },
-      { name: "Minecraft - Solar Client", url: "game-assets/SC.html", popular: false, newRelease: false, hidden: false },
-      { name: "Minecraft - Pixel Client", url: "game-assets/PC.html", popular: false, newRelease: false, hidden: false },
-      { name: "Minecraft - v1.12.2", url: "game-assets/MC1.12.html", popular: true, newRelease: false, hidden: false },
-      { name: "Minecraft - v1.8.8", url: "game-assets/MC1.8.html", popular: false, newRelease: false, hidden: false },
-      { name: "Gran Turismo 2", url: "game-assets/GT2.html", popular: false, newRelease: false, hidden: false },
-      { name: "Gran Turismo", url: "game-assets/GT1.html", popular: false, newRelease: false, hidden: false },
-      { name: "Grand Theft Auto", url: "game-assets/GTA1.html", popular: false, newRelease: false, hidden: true },
-      { name: "Grand Theft Auto 2", url: "game-assets/GTA2.html", popular: false, newRelease: false, hidden: true },
-      { name: "Doom", url: "game-assets/DM1.html", popular: false, newRelease: false, hidden: true },
-      { name: "Quake", url: "game-assets/QK.html", popular: false, newRelease: false, hidden: true },
-      { name: "Oregon Trail", url: "game-assets/OT.html", popular: false, newRelease: false, hidden: false },
-      { name: "Half-Life", url: "game-assets/HL.html", popular: true, newRelease: false, hidden: true },
-      { name: "Hill Climb Racing", url: "game-assets/HCR.html", popular: false, newRelease: false, hidden: false },
-      { name: "Highway Racer", url: "game-assets/HR.html", popular: false, newRelease: false, hidden: false },
-      { name: "Highway Racer 2", url: "game-assets/HR2.html", popular: false, newRelease: false, hidden: false },
-      { name: "Crossy Road", url: "game-assets/CR.html", popular: true, newRelease: false, hidden: false },
-      { name: "Cut the rope", url: "game-assets/CTR.html", popular: false, newRelease: false, hidden: false },
-      { name: "Temple Run 2", url: "game-assets/TR2.html", popular: false, newRelease: false, hidden: false },
-      { name: "Russian CS GO-6", url: "game-assets/RCSGO6.html", popular: false, newRelease: false, hidden: true },
-      { name: "Run 3", url: "game-assets/R3.html", popular: false, newRelease: false, hidden: false },
-      { name: "Real Flight Sim", url: "game-assets/RFS.html", popular: false, newRelease: false, hidden: true },
-      { name: "Rocket League", url: "game-assets/RL.html", popular: false, newRelease: false, hidden: false },
-      { name: "Paper.io", url: "game-assets/PIO.html", popular: false, newRelease: true, hidden: false },
-      { name: "Paper.io 3D", url: "game-assets/PIO3D.html", popular: false, newRelease: true, hidden: false },
-      { name: "Parking Fury", url: "game-assets/PF.html", popular: false, newRelease: true, hidden: false },
-      { name: "Parking Fury 2", url: "game-assets/PF2.html", popular: false, newRelease: true, hidden: false },
-      { name: "Parking Fury 3", url: "game-assets/PF3.html", popular: false, newRelease: true, hidden: false }
+      { name: "doodlejump",              url: "game-assets/DJ.html",      popular: false, newRelease: false, hidden: false },
+      { name: "2048",                    url: "game-assets/2048.html",    popular: false, newRelease: false, hidden: false },
+      { name: "drivemad",                url: "game-assets/DM.html",      popular: true,  newRelease: false, hidden: false },
+      { name: "driftboss",               url: "game-assets/DB.html",      popular: true,  newRelease: false, hidden: false },
+      { name: "minesweeper",             url: "game-assets/minesweeper.html", popular: false, newRelease: false, hidden: true },
+      { name: "escaperoad2",             url: "game-assets/ER2.html",     popular: true,  newRelease: false, hidden: false },
+      { name: "escaperoad3",             url: "game-assets/ER3.html",     popular: true,  newRelease: false, hidden: false },
+      { name: "driveinrussia",           url: "game-assets/DR.html",      popular: false, newRelease: false, hidden: false },
+      { name: "escaperoad",              url: "game-assets/ER1.html",     popular: false, newRelease: false, hidden: false },
+      { name: "baldisbasics",            url: "game-assets/BB.html",      popular: false, newRelease: false, hidden: false },
+      { name: "baseballbros",            url: "game-assets/BB2.html",     popular: true,  newRelease: false, hidden: false },
+      { name: "Subway Surfers",          url: "game-assets/SS.html",      popular: true,  newRelease: false, hidden: false },
+      { name: "Car King Arena",          url: "game-assets/CKA.html",     popular: true,  newRelease: false, hidden: false },
+      { name: "Smashkarts",              url: "game-assets/SK.html",      popular: true,  newRelease: false, hidden: false },
+      { name: "Minecraft - Wurst Client",url: "game-assets/WC.html",     popular: false, newRelease: false, hidden: false },
+      { name: "Minecraft - Solar Client",url: "game-assets/SC.html",     popular: false, newRelease: false, hidden: false },
+      { name: "Minecraft - Pixel Client",url: "game-assets/PC.html",     popular: false, newRelease: false, hidden: false },
+      { name: "Minecraft - v1.12.2",     url: "game-assets/MC1.12.html", popular: true,  newRelease: false, hidden: false },
+      { name: "Minecraft - v1.8.8",      url: "game-assets/MC1.8.html",  popular: false, newRelease: false, hidden: false },
+      { name: "Gran Turismo 2",          url: "game-assets/GT2.html",    popular: false, newRelease: false, hidden: false },
+      { name: "Gran Turismo",            url: "game-assets/GT1.html",    popular: false, newRelease: false, hidden: false },
+      { name: "Grand Theft Auto",        url: "game-assets/GTA1.html",   popular: false, newRelease: false, hidden: true },
+      { name: "Grand Theft Auto 2",      url: "game-assets/GTA2.html",   popular: false, newRelease: false, hidden: true },
+      { name: "Doom",                    url: "game-assets/DM1.html",    popular: false, newRelease: false, hidden: true },
+      { name: "Quake",                   url: "game-assets/QK.html",     popular: false, newRelease: false, hidden: true },
+      { name: "Oregon Trail",            url: "game-assets/OT.html",     popular: false, newRelease: false, hidden: false },
+      { name: "Half-Life",               url: "game-assets/HL.html",     popular: true,  newRelease: false, hidden: true },
+      { name: "Hill Climb Racing",       url: "game-assets/HCR.html",    popular: false, newRelease: false, hidden: false },
+      { name: "Highway Racer",           url: "game-assets/HR.html",     popular: false, newRelease: false, hidden: false },
+      { name: "Highway Racer 2",         url: "game-assets/HR2.html",    popular: false, newRelease: false, hidden: false },
+      { name: "Crossy Road",             url: "game-assets/CR.html",     popular: true,  newRelease: false, hidden: false },
+      { name: "Cut the rope",            url: "game-assets/CTR.html",    popular: false, newRelease: false, hidden: false },
+      { name: "Temple Run 2",            url: "game-assets/TR2.html",    popular: false, newRelease: false, hidden: false },
+      { name: "Russian CS GO-6",         url: "game-assets/RCSGO6.html", popular: false, newRelease: false, hidden: true },
+      { name: "Run 3",                   url: "game-assets/R3.html",     popular: false, newRelease: false, hidden: false },
+      { name: "Real Flight Sim",         url: "game-assets/RFS.html",    popular: false, newRelease: false, hidden: true },
+      { name: "Rocket League",           url: "game-assets/RL.html",     popular: false, newRelease: false, hidden: false },
+      { name: "Paper.io",                url: "game-assets/PIO.html",    popular: false, newRelease: true,  hidden: false },
+      { name: "Paper.io 3D",             url: "game-assets/PIO3D.html",  popular: false, newRelease: true,  hidden: false },
+      { name: "Parking Fury",            url: "game-assets/PF.html",     popular: false, newRelease: true,  hidden: false },
+      { name: "Parking Fury 2",          url: "game-assets/PF2.html",    popular: false, newRelease: true,  hidden: false },
+      { name: "Parking Fury 3",          url: "game-assets/PF3.html",    popular: false, newRelease: true,  hidden: false }
     ].filter(g => g.name && g.url);
 
     const tools = [
-      { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true, newRelease: true, hidden: false },
-      { name: "antiHD", url: "#", popular: false, newRelease: false, hidden: false, special: "antihd" },
-      { name: "Other Window", url: "#", popular: false, newRelease: false, hidden: false, special: "download" }
+      { name: "Adobe Flash Player", url: "tool-assets/flash.html", popular: true,  newRelease: true,  hidden: false },
+      { name: "antiHD",             url: "#",                      popular: false, newRelease: false, hidden: false, special: "antihd" },
+      { name: "Other Window",       url: "#",                      popular: false, newRelease: false, hidden: false, special: "download" }
     ].filter(t => t.name && t.url);
 
     const ANTIHD_PIN = "6797";
 
     const menuOptions = [
-      { label: "Games", action: "play" },
+      { label: "Games",    action: "play" },
       { label: "Software", action: "run" },
       { label: "Settings", action: "settings" },
-      { label: "About", action: "about" },
-      { label: "Exit", action: "exit" }
+      { label: "About",    action: "about" },
+      { label: "Exit",     action: "exit" }
     ];
 
     function getMenuOptions() {
@@ -980,10 +1544,308 @@
       { text: "use \u2191 \u2193 to choose, enter to select" }
     ];
 
-    const linesEl = document.getElementById('lines');
-    const hintEl = document.getElementById('hint');
+    /* ============================================================
+       GNOME NOTIFICATION SYSTEM
+       ============================================================ */
+    function gnomeNotif(icon, appName, title, msg) {
+      if (!document.body.classList.contains('era-modern')) return;
+      const tray = document.getElementById('gnome-notif-tray');
+      const el = document.createElement('div');
+      el.className = 'gnome-notif';
+      el.innerHTML =
+        `<div class="gnome-notif-icon">${icon}</div>` +
+        `<div class="gnome-notif-body">` +
+          `<div class="gnome-notif-app">${appName}</div>` +
+          `<div class="gnome-notif-title">${title}</div>` +
+          (msg ? `<div class="gnome-notif-msg">${msg}</div>` : '') +
+        `</div>` +
+        `<div class="gnome-notif-close" role="button" aria-label="Dismiss">✕</div>`;
+      el.querySelector('.gnome-notif-close').addEventListener('click', () => dismissNotif(el));
+      tray.appendChild(el);
+      setTimeout(() => dismissNotif(el), 4500);
+    }
 
-    let i = 0;
+    function dismissNotif(el) {
+      if (!el.parentNode) return;
+      el.classList.add('dismissing');
+      setTimeout(() => el.remove(), 360);
+    }
+
+    /* ============================================================
+       GNOME PANEL HELPERS
+       ============================================================ */
+    let gnomeWinMinimized = false;
+    let gnomeWinMaximized = false;
+
+    function gnomeCloseAllPanels() {
+      document.getElementById('gnome-cal-popup').classList.remove('open');
+      document.getElementById('gnome-qs-panel').classList.remove('open');
+      document.getElementById('gnome-app-drawer').classList.remove('open');
+      document.getElementById('gnome-clock').classList.remove('active-panel');
+      document.getElementById('gnome-tray-qs').classList.remove('active-panel');
+      document.getElementById('gnome-activities').classList.remove('active-panel');
+    }
+
+    function gnomeToggleCal(e) {
+      e.stopPropagation();
+      const cal = document.getElementById('gnome-cal-popup');
+      const qs  = document.getElementById('gnome-qs-panel');
+      const drawer = document.getElementById('gnome-app-drawer');
+      const wasOpen = cal.classList.contains('open');
+      gnomeCloseAllPanels();
+      if (!wasOpen) {
+        cal.classList.add('open');
+        document.getElementById('gnome-clock').classList.add('active-panel');
+        buildGnomeCal();
+      }
+    }
+
+    function gnomeToggleQS(e) {
+      e.stopPropagation();
+      const qs = document.getElementById('gnome-qs-panel');
+      const wasOpen = qs.classList.contains('open');
+      gnomeCloseAllPanels();
+      if (!wasOpen) {
+        qs.classList.add('open');
+        document.getElementById('gnome-tray-qs').classList.add('active-panel');
+      }
+    }
+
+    function gnomeToggleDrawer(e) {
+      e.stopPropagation();
+      const drawer = document.getElementById('gnome-app-drawer');
+      const wasOpen = drawer.classList.contains('open');
+      gnomeCloseAllPanels();
+      if (!wasOpen) {
+        drawer.classList.add('open');
+        document.getElementById('gnome-activities').classList.add('active-panel');
+        setTimeout(() => document.getElementById('gnome-drawer-search').focus(), 60);
+      }
+    }
+
+    function buildGnomeCal() {
+      const grid  = document.getElementById('gnome-cal-grid');
+      const label = document.getElementById('gnome-cal-month');
+      const d = new Date();
+      const year = d.getFullYear(), month = d.getMonth(), today = d.getDate();
+      label.textContent = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const hdrs = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+      grid.innerHTML = hdrs.map(h => `<div class="gnome-cal-hdr">${h}</div>`).join('');
+      for (let i = 0; i < firstDay; i++) grid.innerHTML += '<div></div>';
+      for (let i = 1; i <= daysInMonth; i++) {
+        grid.innerHTML += `<div class="gnome-cal-day${i === today ? ' today' : ''}">${i}</div>`;
+      }
+    }
+
+    /* ============================================================
+       GNOME WINDOW MANAGEMENT (close / min / max)
+       ============================================================ */
+    function gnomeWinClose() {
+      const crt = document.getElementById('main-crt');
+      crt.style.transition = 'opacity 0.2s, transform 0.2s';
+      crt.style.opacity = '0';
+      crt.style.transform = 'scale(0.9) translateY(10px)';
+      document.getElementById('gnome-dock-home').classList.remove('active');
+      gnomeNotif('🎮', 'The ArchIve', 'Window closed', 'Click the dock icon to reopen.');
+      setTimeout(() => { crt.style.display = 'none'; }, 220);
+    }
+
+    function gnomeWinRestore() {
+      const crt = document.getElementById('main-crt');
+      crt.style.display = '';
+      // force reflow so transition fires
+      void crt.offsetWidth;
+      crt.style.transition = 'opacity 0.2s, transform 0.2s';
+      crt.style.opacity = '1';
+      crt.style.transform = '';
+      crt.classList.remove('minimized-window');
+      gnomeWinMinimized = false;
+      document.getElementById('gnome-dock-home').classList.add('active');
+    }
+
+    function gnomeWinMin() {
+      const crt = document.getElementById('main-crt');
+      gnomeWinMinimized = !gnomeWinMinimized;
+      crt.style.transition = 'opacity 0.2s, transform 0.2s';
+      crt.classList.toggle('minimized-window', gnomeWinMinimized);
+      if (gnomeWinMinimized) {
+        gnomeNotif('🎮', 'The ArchIve', 'Minimized', 'Click the dock icon to restore.');
+      }
+    }
+
+    function gnomeWinMax() {
+      const crt = document.getElementById('main-crt');
+      const hdr = document.getElementById('gnome-header');
+      const btn = document.getElementById('gnome-btn-max');
+      gnomeWinMaximized = !gnomeWinMaximized;
+      crt.classList.toggle('maximized-window', gnomeWinMaximized);
+      btn.textContent = gnomeWinMaximized ? '❐' : '▢';
+      btn.title = gnomeWinMaximized ? 'Restore' : 'Maximize';
+    }
+
+    /* ============================================================
+       GNOME QUICK-SETTINGS TILES
+       ============================================================ */
+    document.querySelectorAll('.gnome-qs-tile').forEach(tile => {
+      tile.addEventListener('click', e => {
+        e.stopPropagation();
+        tile.classList.toggle('on');
+        const on    = tile.classList.contains('on');
+        const label = tile.dataset.label;
+        gnomeNotif(
+          tile.querySelector('.gnome-qs-tile-icon').textContent,
+          'Quick Settings',
+          `${label} turned ${on ? 'on' : 'off'}`,
+          ''
+        );
+      });
+    });
+
+    /* ============================================================
+       GNOME APP DRAWER — search filter
+       ============================================================ */
+    document.getElementById('gnome-drawer-search').addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      document.querySelectorAll('.gnome-drawer-app').forEach(app => {
+        const name = app.dataset.name.toLowerCase();
+        app.style.display = (!q || name.includes(q)) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('gnome-drawer-grid').addEventListener('click', function(e) {
+      const app = e.target.closest('.gnome-drawer-app');
+      if (!app) return;
+      gnomeCloseAllPanels();
+      const action = app.dataset.action;
+      const name   = app.dataset.name;
+      const icon   = app.dataset.icon;
+      if (action === 'home') {
+        gnomeWinRestore();
+        goHome();
+      } else if (action === 'settings') {
+        gnomeWinRestore();
+        goHome();
+        openSettingsScreen();
+      } else if (action === 'terminal') {
+        openDMSTerminal();
+      } else {
+        gnomeNotif(icon, 'GNOME Shell', name, 'Launched.');
+      }
+    });
+
+    /* ============================================================
+       GNOME DOCK ACTIONS
+       ============================================================ */
+    document.getElementById('gnome-dock-home').addEventListener('click', () => {
+      gnomeCloseAllPanels();
+      if (gnomeWinMinimized || document.getElementById('main-crt').style.display === 'none') {
+        gnomeWinRestore();
+      }
+      goHome();
+    });
+
+    document.getElementById('gnome-dock-settings').addEventListener('click', () => {
+      gnomeCloseAllPanels();
+      gnomeWinRestore();
+      goHome();
+      openSettingsScreen();
+    });
+
+    document.getElementById('gnome-dock-files').addEventListener('click', () => {
+      gnomeNotif('🗃', 'Files', 'game-assets/ mounted', 'tool-assets/ mounted');
+    });
+
+    document.getElementById('gnome-dock-browser').addEventListener('click', () => {
+      gnomeNotif('🌐', 'Firefox', 'No network access', 'The ArchIve runs offline.');
+    });
+
+    document.getElementById('gnome-dock-terminal').addEventListener('click', () => {
+      openDMSTerminal();
+    });
+
+    document.getElementById('gnome-dock-trash').addEventListener('click', () => {
+      gnomeNotif('🗑', 'Trash', 'Trash is empty', '');
+    });
+
+    /* ============================================================
+       GNOME TOPBAR ACTIONS
+       ============================================================ */
+    document.getElementById('gnome-activities').addEventListener('click', gnomeToggleDrawer);
+    document.getElementById('gnome-app-menu').addEventListener('click', e => {
+      e.stopPropagation();
+      gnomeCloseAllPanels();
+      gnomeWinRestore();
+      goHome();
+    });
+    document.getElementById('gnome-clock').addEventListener('click', gnomeToggleCal);
+
+    // tray cluster — click anywhere in the right group opens QS
+    ['gnome-tray-wifi','gnome-tray-vol','gnome-tray-batt','gnome-tray-qs'].forEach(id => {
+      document.getElementById(id).addEventListener('click', gnomeToggleQS);
+    });
+
+    document.getElementById('gnome-qs-power').addEventListener('click', e => {
+      e.stopPropagation();
+      gnomeCloseAllPanels();
+      gnomeNotif('⏻', 'System', 'Power options', 'Shut down · Restart · Suspend');
+    });
+
+    /* ============================================================
+       GNOME HEADER BAR BUTTONS
+       ============================================================ */
+    document.getElementById('gnome-btn-close').addEventListener('click', gnomeWinClose);
+    document.getElementById('gnome-btn-min').addEventListener('click', gnomeWinMin);
+    document.getElementById('gnome-btn-max').addEventListener('click', gnomeWinMax);
+
+    document.getElementById('gnome-hdr-games').addEventListener('click', () => {
+      goHome();
+      openBrowseScreen('games');
+    });
+    document.getElementById('gnome-hdr-software').addEventListener('click', () => {
+      goHome();
+      openBrowseScreen('tools');
+    });
+    document.getElementById('gnome-hdr-menu').addEventListener('click', () => {
+      gnomeNotif('☰', 'The ArchIve', 'Menu', 'About · Settings · Exit');
+    });
+
+    /* close panels when clicking outside */
+    document.addEventListener('click', () => gnomeCloseAllPanels());
+    document.getElementById('gnome-cal-popup').addEventListener('click', e => e.stopPropagation());
+    document.getElementById('gnome-qs-panel').addEventListener('click', e => e.stopPropagation());
+    document.getElementById('gnome-app-drawer').addEventListener('click', e => e.stopPropagation());
+
+    /* Esc closes drawer */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && document.getElementById('gnome-app-drawer').classList.contains('open')) {
+        gnomeCloseAllPanels();
+      }
+    });
+
+    /* ============================================================
+       GNOME CLOCK
+       ============================================================ */
+    function updateGnomeClock() {
+      const el = document.getElementById('gnome-clock');
+      if (!el) return;
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      el.textContent = `${days[now.getDay()]} ${hh}:${mm}`;
+    }
+    updateGnomeClock();
+    setInterval(updateGnomeClock, 15000);
+
+    /* ============================================================
+       CORE PORTAL STATE
+       ============================================================ */
+    const linesEl = document.getElementById('lines');
+    const hintEl  = document.getElementById('hint');
+
+    let lineI = 0;
     let selectedIndex = 0;
     let menuActive = false;
     let fullscreenRequested = false;
@@ -1007,25 +1869,22 @@
     }
 
     document.addEventListener('keydown', requestFullscreen, { once: true });
-    document.addEventListener('click', requestFullscreen, { once: true });
+    document.addEventListener('click',   requestFullscreen, { once: true });
 
-    // ---- CRT effect settings ----
-    const settings = {
-      scanlines: true,
-      noise: true,
-      flicker: true,
-      jitter: true
-    };
+    /* ============================================================
+       SETTINGS STATE
+       ============================================================ */
+    const settings = { scanlines: true, noise: true, flicker: true, jitter: true };
 
     const themes = [
-      { name: "Green Phosphor", fg: "#00FF00", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff4444" },
-      { name: "Amber CRT",      fg: "#FFB000", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff4444" },
-      { name: "Cyan Terminal",  fg: "#00E5FF", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff5577" },
-      { name: "Blood Red",      fg: "#FF2A2A", scanline: "rgba(0, 0, 0, 0.18)", error: "#ffaa00" },
-      { name: "Ghost White",    fg: "#F2F2F2", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff4444" },
-      { name: "Windows XP",     fg: "#2A63B0", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff4444" },
-      { name: "Windows Vista",  fg: "#2E9FD6", scanline: "rgba(0, 0, 0, 0.18)", error: "#ff5577" },
-      { name: "Mac OS X",       fg: "#1E90FF", scanline: "rgba(0, 0, 0, 0.18)", error: "#FF3B30" }
+      { name: "Green Phosphor", fg: "#00FF00", scanline: "rgba(0,0,0,0.18)", error: "#ff4444" },
+      { name: "Amber CRT",      fg: "#FFB000", scanline: "rgba(0,0,0,0.18)", error: "#ff4444" },
+      { name: "Cyan Terminal",  fg: "#00E5FF", scanline: "rgba(0,0,0,0.18)", error: "#ff5577" },
+      { name: "Blood Red",      fg: "#FF2A2A", scanline: "rgba(0,0,0,0.18)", error: "#ffaa00" },
+      { name: "Ghost White",    fg: "#F2F2F2", scanline: "rgba(0,0,0,0.18)", error: "#ff4444" },
+      { name: "Windows XP",     fg: "#2A63B0", scanline: "rgba(0,0,0,0.18)", error: "#ff4444" },
+      { name: "Windows Vista",  fg: "#2E9FD6", scanline: "rgba(0,0,0,0.18)", error: "#ff5577" },
+      { name: "Mac OS X",       fg: "#1E90FF", scanline: "rgba(0,0,0,0.18)", error: "#FF3B30" }
     ];
     let currentThemeIndex = 0;
 
@@ -1038,34 +1897,33 @@
     let currentEraIndex = 0;
 
     const settingsItems = [
-      { type: "toggle", label: "Scanlines", key: "scanlines" },
-      { type: "toggle", label: "Static Noise", key: "noise" },
-      { type: "toggle", label: "Screen Flicker", key: "flicker" },
+      { type: "toggle", label: "Scanlines",     key: "scanlines" },
+      { type: "toggle", label: "Static Noise",  key: "noise" },
+      { type: "toggle", label: "Screen Flicker",key: "flicker" },
       { type: "toggle", label: "Glitch Jitter", key: "jitter" },
-      { type: "theme", label: "Color Theme" },
-      { type: "era", label: "UI Era" }
+      { type: "theme",  label: "Color Theme" },
+      { type: "era",    label: "UI Era" }
     ];
 
     function applySettings() {
-      const crtEl = document.querySelector('.crt');
+      const crtEl  = document.getElementById('main-crt');
       const wrapEl = document.querySelector('.terminal-wrap');
-      const noiseEl = document.querySelector('.crt-noise');
+      const noiseEl= document.querySelector('.crt-noise');
       const rollEl = document.querySelector('.crt-roll');
-
       crtEl.classList.toggle('no-scanlines', !settings.scanlines);
-      crtEl.classList.toggle('no-flicker', !settings.flicker);
-      wrapEl.classList.toggle('no-jitter', !settings.jitter);
+      crtEl.classList.toggle('no-flicker',   !settings.flicker);
+      wrapEl.classList.toggle('no-jitter',   !settings.jitter);
       noiseEl.classList.toggle('hidden-effect', !settings.noise);
-      rollEl.classList.toggle('hidden-effect', !settings.noise);
+      rollEl.classList.toggle('hidden-effect',  !settings.noise);
     }
 
     function applyTheme(idx) {
       currentThemeIndex = (idx + themes.length) % themes.length;
       const theme = themes[currentThemeIndex];
-      const root = document.documentElement;
-      root.style.setProperty('--fg', theme.fg);
+      const root  = document.documentElement;
+      root.style.setProperty('--fg',       theme.fg);
       root.style.setProperty('--scanline', theme.scanline);
-      root.style.setProperty('--error', theme.error);
+      root.style.setProperty('--error',    theme.error);
     }
 
     function applyEra(idx) {
@@ -1081,11 +1939,13 @@
     function isMouseEra() {
       return eras[currentEraIndex].key !== 'archive';
     }
-
     function applyMouseEraClass() {
       document.body.classList.toggle('mouse-nav', isMouseEra());
     }
 
+    /* ============================================================
+       MENU SELECTION HANDLER
+       ============================================================ */
     function handleSelection(action) {
       menuActive = false;
       document.removeEventListener('keydown', onMenuKeydown);
@@ -1125,10 +1985,10 @@
           break;
       }
 
-      const spacer1 = document.createElement('div');
-      spacer1.className = 'line shown';
-      spacer1.innerHTML = '&nbsp;';
-      linesEl.appendChild(spacer1);
+      const spacer = document.createElement('div');
+      spacer.className = 'line shown';
+      spacer.innerHTML = '&nbsp;';
+      linesEl.appendChild(spacer);
 
       const responseLine = document.createElement('div');
       responseLine.className = 'line shown';
@@ -1137,9 +1997,11 @@
       linesEl.appendChild(responseLine);
     }
 
-    // ---- Settings screen ----
+    /* ============================================================
+       SETTINGS SCREEN
+       ============================================================ */
     let settingsSelectedIndex = 0;
-    let openDropdownType = null; // null | 'theme' | 'era'
+    let openDropdownType = null;
     let dropdownHighlightIndex = 0;
 
     function openSettingsScreen() {
@@ -1157,59 +2019,49 @@
         <div id="settings-list-theme" class="game-list"></div>
         <div class="section-title">-- UI Era --</div>
         <div id="settings-list-era" class="game-list"></div>
-        <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ \u2191 \u2193: choose | ENTER: toggle/open | ESC / BACKSPACE: back ]</div>
+        <div style="font-size:11px;opacity:0.5;margin-top:1em;">[ \u2191 \u2193: choose | ENTER: toggle/open | ESC / BACKSPACE: back ]</div>
       `;
-
       renderSettingsList();
       document.addEventListener('keydown', onSettingsScreenKeydown);
     }
 
     function renderDropdownOptions(container, type) {
-      const options = type === 'theme' ? themes : eras;
+      const options    = type === 'theme' ? themes : eras;
       const currentIdx = type === 'theme' ? currentThemeIndex : currentEraIndex;
-
       const panel = document.createElement('div');
       panel.className = 'dropdown-panel';
-
       options.forEach((opt, i) => {
         const optRow = document.createElement('div');
-        const isHighlighted = i === dropdownHighlightIndex;
-        const isCurrent = i === currentIdx;
-        optRow.className = 'settings-row dropdown-option' + (isHighlighted ? ' selected' : '') + (isCurrent ? ' current' : '');
-        optRow.textContent = (isCurrent ? '\u2713 ' : '\u00a0\u00a0') + opt.name;
-
+        optRow.className = 'settings-row dropdown-option' +
+          (i === dropdownHighlightIndex ? ' selected' : '') +
+          (i === currentIdx ? ' current' : '');
+        optRow.textContent = (i === currentIdx ? '\u2713 ' : '\u00a0\u00a0') + opt.name;
         optRow.addEventListener('mouseenter', () => {
-          if (!isMouseEra()) return;
-          if (dropdownHighlightIndex === i) return;
+          if (!isMouseEra() || dropdownHighlightIndex === i) return;
           dropdownHighlightIndex = i;
           renderSettingsList();
         });
-        optRow.addEventListener('click', (e) => {
+        optRow.addEventListener('click', e => {
           if (!isMouseEra()) return;
           e.stopPropagation();
-          if (type === 'theme') {
-            applyTheme(i);
-          } else {
-            applyEra(i);
-          }
+          if (type === 'theme') applyTheme(i);
+          else applyEra(i);
           openDropdownType = null;
           renderSettingsList();
         });
-
         panel.appendChild(optRow);
       });
-
       container.appendChild(panel);
     }
 
     function renderSettingsList() {
       const effectsEl = document.getElementById('settings-list-effects');
-      const themeEl = document.getElementById('settings-list-theme');
-      const eraEl = document.getElementById('settings-list-era');
+      const themeEl   = document.getElementById('settings-list-theme');
+      const eraEl     = document.getElementById('settings-list-era');
       if (!effectsEl || !themeEl || !eraEl) return;
       effectsEl.innerHTML = '';
-      themeEl.innerHTML = '';
-      eraEl.innerHTML = '';
+      themeEl.innerHTML   = '';
+      eraEl.innerHTML     = '';
 
       settingsItems.forEach((item, idx) => {
         const row = document.createElement('div');
@@ -1221,9 +2073,7 @@
           const dropdownWouldClose = openDropdownType && openDropdownType !== item.type;
           if (settingsSelectedIndex === idx && !dropdownWouldClose) return;
           settingsSelectedIndex = idx;
-          if (dropdownWouldClose) {
-            openDropdownType = null;
-          }
+          if (dropdownWouldClose) openDropdownType = null;
           renderSettingsList();
         });
 
@@ -1247,9 +2097,7 @@
           });
           const targetEl = item.type === 'theme' ? themeEl : eraEl;
           targetEl.appendChild(row);
-          if (isOpen) {
-            renderDropdownOptions(targetEl, item.type);
-          }
+          if (isOpen) renderDropdownOptions(targetEl, item.type);
         }
       });
     }
@@ -1266,11 +2114,8 @@
 
     function confirmDropdownSelection() {
       if (!openDropdownType) return;
-      if (openDropdownType === 'theme') {
-        applyTheme(dropdownHighlightIndex);
-      } else {
-        applyEra(dropdownHighlightIndex);
-      }
+      if (openDropdownType === 'theme') applyTheme(dropdownHighlightIndex);
+      else applyEra(dropdownHighlightIndex);
       openDropdownType = null;
       renderSettingsList();
     }
@@ -1283,15 +2128,8 @@
       renderSettingsList();
     }
 
-    function cycleTheme(direction) {
-      applyTheme(currentThemeIndex + direction);
-      renderSettingsList();
-    }
-
-    function cycleEra(direction) {
-      applyEra(currentEraIndex + direction);
-      renderSettingsList();
-    }
+    function cycleTheme(dir) { applyTheme(currentThemeIndex + dir); renderSettingsList(); }
+    function cycleEra(dir)   { applyEra(currentEraIndex + dir);     renderSettingsList(); }
 
     function closeSettingsScreen() {
       document.removeEventListener('keydown', onSettingsScreenKeydown);
@@ -1299,7 +2137,6 @@
       const playScreen = document.getElementById('play-screen');
       playScreen.style.display = 'none';
       playScreen.innerHTML = '';
-
       linesEl.style.display = '';
       linesEl.innerHTML = '';
       menuActive = false;
@@ -1308,99 +2145,51 @@
     }
 
     function onSettingsScreenKeydown(e) {
-      // While a dropdown is open, arrow keys/enter/escape control the dropdown itself
       if (openDropdownType) {
         const options = openDropdownType === 'theme' ? themes : eras;
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          dropdownHighlightIndex = (dropdownHighlightIndex + 1) % options.length;
-          renderSettingsList();
-          return;
-        }
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          dropdownHighlightIndex = (dropdownHighlightIndex - 1 + options.length) % options.length;
-          renderSettingsList();
-          return;
-        }
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          confirmDropdownSelection();
-          return;
-        }
-        if (e.key === 'Escape' || e.key === 'Backspace') {
-          e.preventDefault();
-          openDropdownType = null;
-          renderSettingsList();
-          return;
-        }
+        if (e.key === 'ArrowDown')  { e.preventDefault(); dropdownHighlightIndex = (dropdownHighlightIndex + 1) % options.length; renderSettingsList(); return; }
+        if (e.key === 'ArrowUp')    { e.preventDefault(); dropdownHighlightIndex = (dropdownHighlightIndex - 1 + options.length) % options.length; renderSettingsList(); return; }
+        if (e.key === 'Enter')      { e.preventDefault(); confirmDropdownSelection(); return; }
+        if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); openDropdownType = null; renderSettingsList(); return; }
         return;
       }
-
-      if (e.key === 'Escape' || e.key === 'Backspace') {
-        e.preventDefault();
-        closeSettingsScreen();
-        return;
-      }
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        settingsSelectedIndex = (settingsSelectedIndex + 1) % settingsItems.length;
-        renderSettingsList();
-        return;
-      }
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        settingsSelectedIndex = (settingsSelectedIndex - 1 + settingsItems.length) % settingsItems.length;
-        renderSettingsList();
-        return;
-      }
-
+      if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); closeSettingsScreen(); return; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); settingsSelectedIndex = (settingsSelectedIndex + 1) % settingsItems.length; renderSettingsList(); return; }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); settingsSelectedIndex = (settingsSelectedIndex - 1 + settingsItems.length) % settingsItems.length; renderSettingsList(); return; }
       const currentItem = settingsItems[settingsSelectedIndex];
-
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (currentItem.type === 'toggle') {
-          toggleSetting(settingsSelectedIndex);
-        } else if (currentItem.type === 'theme' || currentItem.type === 'era') {
-          openDropdown(currentItem.type);
-        }
+        if (currentItem.type === 'toggle') toggleSetting(settingsSelectedIndex);
+        else if (currentItem.type === 'theme' || currentItem.type === 'era') openDropdown(currentItem.type);
         return;
       }
-
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        if (currentItem.type === 'theme') {
-          cycleTheme(-1);
-        } else if (currentItem.type === 'era') {
-          cycleEra(-1);
-        } else if (currentItem.type === 'toggle') {
-          toggleSetting(settingsSelectedIndex);
-        }
+        if (currentItem.type === 'theme') cycleTheme(-1);
+        else if (currentItem.type === 'era') cycleEra(-1);
+        else if (currentItem.type === 'toggle') toggleSetting(settingsSelectedIndex);
         return;
       }
-
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        if (currentItem.type === 'theme') {
-          cycleTheme(1);
-        } else if (currentItem.type === 'era') {
-          cycleEra(1);
-        } else if (currentItem.type === 'toggle') {
-          toggleSetting(settingsSelectedIndex);
-        }
+        if (currentItem.type === 'theme') cycleTheme(1);
+        else if (currentItem.type === 'era') cycleEra(1);
+        else if (currentItem.type === 'toggle') toggleSetting(settingsSelectedIndex);
         return;
       }
     }
 
+    /* ============================================================
+       BROWSE SCREEN (games / tools)
+       ============================================================ */
     let currentDataset = [];
-    let filteredItems = [];
+    let filteredItems  = [];
     let itemSelectedIndex = 0;
-    let currentMode = "games"; 
+    let currentMode = "games";
 
     function openBrowseScreen(mode, showHidden = false) {
       currentMode = mode;
-      currentDataset = ((mode === "games") ? games : tools).filter(item => showHidden || !item.hidden);
-
+      currentDataset = (mode === "games" ? games : tools).filter(item => showHidden || !item.hidden);
       linesEl.innerHTML = '';
       linesEl.style.display = 'none';
 
@@ -1412,14 +2201,14 @@
           <input type="text" id="game-search" autocomplete="off" spellcheck="false" placeholder="type to filter..." />
         </div>
         <div id="play-screen-content"></div>
-        <div id="launch-status" style="font-size: 11px; min-height: 1.2em; margin-top: 0.5em; opacity: 0; transition: opacity 0.25s;"></div>
-        <div style="font-size: 11px; opacity: 0.5; margin-top: 0.25em;">[ BACKSPACE: back | ESC: back (exits fullscreen) | ENTER: launch ]</div>
+        <div id="launch-status" style="font-size:11px;min-height:1.2em;margin-top:0.5em;opacity:0;transition:opacity 0.25s;"></div>
+        <div style="font-size:11px;opacity:0.5;margin-top:0.25em;">[ BACKSPACE: back | ESC: back (exits fullscreen) | ENTER: launch ]</div>
       `;
 
       const searchInput = document.getElementById('game-search');
       searchInput.focus();
       searchInput.addEventListener('input', onItemSearchInput);
-      
+
       itemSelectedIndex = 0;
       updateItemFilter("");
       document.addEventListener('keydown', onBrowseScreenKeydown);
@@ -1430,7 +2219,6 @@
       const playScreen = document.getElementById('play-screen');
       playScreen.style.display = 'none';
       playScreen.innerHTML = '';
-
       linesEl.style.display = '';
       linesEl.innerHTML = '';
       menuActive = false;
@@ -1443,11 +2231,9 @@
       document.removeEventListener('keydown', onSettingsScreenKeydown);
       document.removeEventListener('keydown', onPinScreenKeydown);
       document.removeEventListener('keydown', onMenuKeydown);
-
       const playScreen = document.getElementById('play-screen');
       playScreen.style.display = 'none';
       playScreen.innerHTML = '';
-
       linesEl.style.display = '';
       linesEl.innerHTML = '';
       menuActive = false;
@@ -1457,11 +2243,6 @@
 
     function simulateKey(key) {
       document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
-    }
-
-    function dockOpenSettings() {
-      goHome();
-      openSettingsScreen();
     }
 
     function performExit() {
@@ -1474,9 +2255,7 @@
       responseLine.className = 'line shown';
       responseLine.textContent = '> goodbye.';
       linesEl.appendChild(responseLine);
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     }
 
     const returnMenuScript = [
@@ -1502,11 +2281,8 @@
         } else {
           const div = document.createElement('div');
           div.className = 'line shown';
-          if (entry.text) {
-            div.textContent = entry.text;
-          } else {
-            div.innerHTML = '&nbsp;';
-          }
+          div.textContent = entry.text || '';
+          if (!entry.text) div.innerHTML = '&nbsp;';
           linesEl.appendChild(div);
         }
       });
@@ -1514,10 +2290,9 @@
 
     function updateItemFilter(query) {
       if (query === "") {
-        const popularItems = currentDataset.filter(item => item.popular);
-        const newItems = currentDataset.filter(item => item.newRelease);
-        const regularItems = currentDataset.filter(item => !item.popular && !item.newRelease);
-        
+        const popularItems  = currentDataset.filter(item => item.popular);
+        const newItems      = currentDataset.filter(item => item.newRelease);
+        const regularItems  = currentDataset.filter(item => !item.popular && !item.newRelease);
         filteredItems = [...popularItems, ...newItems, ...regularItems];
         renderDualList(popularItems, newItems, regularItems);
       } else {
@@ -1528,11 +2303,10 @@
 
     function bindItemRow(row, idx, item) {
       row.addEventListener('mouseenter', () => {
-        if (!isMouseEra()) return;
-        if (itemSelectedIndex === idx) return;
+        if (!isMouseEra() || itemSelectedIndex === idx) return;
         itemSelectedIndex = idx;
-        const searchInput = document.getElementById('game-search');
-        updateItemFilter(searchInput ? searchInput.value.trim().toLowerCase() : "");
+        const si = document.getElementById('game-search');
+        updateItemFilter(si ? si.value.trim().toLowerCase() : "");
       });
       row.addEventListener('click', () => {
         if (!isMouseEra()) return;
@@ -1548,8 +2322,7 @@
 
     function renderDualList(popular, newItems, indexOnly) {
       const contentEl = document.getElementById('play-screen-content');
-      const headerTitle = (currentMode === "games") ? "-- Popular Hits --" : "-- Featured Software --";
-      
+      const headerTitle = currentMode === "games" ? "-- Popular Hits --" : "-- Featured Software --";
       contentEl.innerHTML = `
         <div class="section-title">${headerTitle}</div>
         <div class="game-list" id="popular-list"></div>
@@ -1558,14 +2331,11 @@
         <div class="section-title">-- Index --</div>
         <div class="game-list" id="all-list"></div>
       `;
-
       const popList = document.getElementById('popular-list');
       const newList = document.getElementById('new-list');
       const allList = document.getElementById('all-list');
-
       let totalIdx = 0;
-      
-      popular.forEach((item) => {
+      popular.forEach(item => {
         const row = document.createElement('div');
         row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
         row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
@@ -1573,8 +2343,7 @@
         popList.appendChild(row);
         totalIdx++;
       });
-
-      newItems.forEach((item) => {
+      newItems.forEach(item => {
         const row = document.createElement('div');
         row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
         row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
@@ -1582,8 +2351,7 @@
         newList.appendChild(row);
         totalIdx++;
       });
-
-      indexOnly.forEach((item) => {
+      indexOnly.forEach(item => {
         const row = document.createElement('div');
         row.className = 'game-row' + (totalIdx === itemSelectedIndex ? ' selected' : '');
         row.textContent = (totalIdx === itemSelectedIndex ? '  > ' : '    ') + item.name;
@@ -1600,12 +2368,10 @@
         <div class="game-list" id="search-list"></div>
       `;
       const searchList = document.getElementById('search-list');
-
       if (list.length === 0) {
         searchList.innerHTML = `<div class="no-results">no items found</div>`;
         return;
       }
-
       list.forEach((item, idx) => {
         const row = document.createElement('div');
         row.className = 'game-row' + (idx === itemSelectedIndex ? ' selected' : '');
@@ -1634,9 +2400,7 @@
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
         })
-        .catch(err => {
-          console.error('Download failed:', err);
-        });
+        .catch(err => console.error('Download failed:', err));
     }
 
     function showLaunchStatus(msg, isError) {
@@ -1651,52 +2415,32 @@
 
     function launchAsset(item) {
       if (!item || !item.url) return;
-
       const popup = window.open('', '_blank', 'width=' + screen.width + ',height=' + screen.height);
-
       if (!popup) {
         showLaunchStatus('Pop-up blocked — allow pop-ups for this page to launch "' + item.name + '".', true);
         window.open(item.url, '_blank');
         return;
       }
-
       showLaunchStatus('Launching "' + item.name + '"...', false);
-
+      if (document.body.classList.contains('era-modern')) {
+        gnomeNotif('🎮', 'The ArchIve', `Launching ${item.name}`, '');
+      }
       fetch(item.url)
-        .then(res => {
-          if (!res.ok) throw new Error('fetch failed');
-          return res.text();
-        })
-        .then(html => {
-          popup.document.open();
-          popup.document.write(html);
-          popup.document.close();
-        })
+        .then(res => { if (!res.ok) throw new Error('fetch failed'); return res.text(); })
+        .then(html => { popup.document.open(); popup.document.write(html); popup.document.close(); })
         .catch(() => {
-          try {
-            popup.location.href = item.url;
-          } catch (err) {
-            showLaunchStatus('Could not load "' + item.name + '" — check that ' + item.url + ' exists.', true);
-          }
+          try { popup.location.href = item.url; }
+          catch (err) { showLaunchStatus('Could not load "' + item.name + '" — check that ' + item.url + ' exists.', true); }
         });
     }
 
     function onBrowseScreenKeydown(e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        closeBrowseScreen();
-        return;
-      }
-
+      if (e.key === 'Escape') { e.preventDefault(); closeBrowseScreen(); return; }
       if (e.key === 'Backspace') {
-        const searchInput = document.getElementById('game-search');
-        if (!searchInput || searchInput.value === '') {
-          e.preventDefault();
-          closeBrowseScreen();
-        }
+        const si = document.getElementById('game-search');
+        if (!si || si.value === '') { e.preventDefault(); closeBrowseScreen(); }
         return;
       }
-
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         if (filteredItems.length === 0) return;
@@ -1720,6 +2464,9 @@
       }
     }
 
+    /* ============================================================
+       PIN SCREEN
+       ============================================================ */
     let pinBuffer = '';
 
     function openPinScreen() {
@@ -1731,7 +2478,7 @@
           <div class="pin-dots" id="pin-dots"></div>
           <div id="pin-message" class="pin-message">&nbsp;</div>
         </div>
-        <div style="font-size: 11px; opacity: 0.5; margin-top: 1em;">[ BACKSPACE (empty): back | ESC: back (exits fullscreen) | ENTER: submit ]</div>
+        <div style="font-size:11px;opacity:0.5;margin-top:1em;">[ BACKSPACE (empty): back | ESC: back (exits fullscreen) | ENTER: submit ]</div>
       `;
       renderPinDots();
       document.addEventListener('keydown', onPinScreenKeydown);
@@ -1744,58 +2491,35 @@
       for (let pos = 0; pos < ANTIHD_PIN.length; pos++) {
         const dot = document.createElement('div');
         dot.className = 'pin-dot';
-        if (pos < pinBuffer.length) {
-          dot.classList.add('filled');
-        } else if (pos === pinBuffer.length) {
-          dot.classList.add('active');
-        }
+        if (pos < pinBuffer.length)      dot.classList.add('filled');
+        else if (pos === pinBuffer.length) dot.classList.add('active');
         dotsEl.appendChild(dot);
       }
     }
 
     function showPinError() {
       const dotsEl = document.getElementById('pin-dots');
-      const msg = document.getElementById('pin-message');
-      if (msg) {
-        msg.textContent = '> access denied.';
-        msg.classList.add('error');
-      }
+      const msg    = document.getElementById('pin-message');
+      if (msg) { msg.textContent = '> access denied.'; msg.classList.add('error'); }
       if (dotsEl) {
         dotsEl.classList.add('error', 'shake');
-        setTimeout(() => {
-          dotsEl.classList.remove('shake');
-        }, 400);
+        setTimeout(() => dotsEl.classList.remove('shake'), 400);
       }
     }
 
     function clearPinError() {
       const dotsEl = document.getElementById('pin-dots');
-      const msg = document.getElementById('pin-message');
-      if (msg) {
-        msg.textContent = '\u00a0';
-        msg.classList.remove('error');
-      }
+      const msg    = document.getElementById('pin-message');
+      if (msg) { msg.textContent = '\u00a0'; msg.classList.remove('error'); }
       if (dotsEl) dotsEl.classList.remove('error');
     }
 
     function onPinScreenKeydown(e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        document.removeEventListener('keydown', onPinScreenKeydown);
-        closeBrowseScreen();
-        return;
-      }
+      if (e.key === 'Escape') { e.preventDefault(); document.removeEventListener('keydown', onPinScreenKeydown); closeBrowseScreen(); return; }
       if (e.key === 'Backspace') {
         e.preventDefault();
-        if (pinBuffer.length > 0) {
-          pinBuffer = pinBuffer.slice(0, -1);
-          clearPinError();
-          renderPinDots();
-        } else {
-
-          document.removeEventListener('keydown', onPinScreenKeydown);
-          closeBrowseScreen();
-        }
+        if (pinBuffer.length > 0) { pinBuffer = pinBuffer.slice(0, -1); clearPinError(); renderPinDots(); }
+        else { document.removeEventListener('keydown', onPinScreenKeydown); closeBrowseScreen(); }
         return;
       }
       if (e.key === 'Enter') {
@@ -1819,8 +2543,9 @@
       }
     }
 
-
-
+    /* ============================================================
+       MENU RENDERING
+       ============================================================ */
     function renderMenu(container) {
       container.innerHTML = '';
       getMenuOptions().forEach((opt, idx) => {
@@ -1828,8 +2553,7 @@
         row.className = 'menu-row' + (idx === selectedIndex ? ' selected' : '');
         row.textContent = (idx === selectedIndex ? '  > ' : '    ') + opt.label;
         row.addEventListener('mouseenter', () => {
-          if (!isMouseEra() || !menuActive) return;
-          if (selectedIndex === idx) return;
+          if (!isMouseEra() || !menuActive || selectedIndex === idx) return;
           selectedIndex = idx;
           renderMenu(container);
         });
@@ -1860,6 +2584,353 @@
       }
     }
 
+    /* ============================================================
+       DMS TERMINAL EASTER EGG
+       ============================================================ */
+    const DMS_ASCII =
+`  ██████╗ ███╗   ███╗███████╗
+  ██╔══██╗████╗ ████║██╔════╝
+  ██║  ██║██╔████╔██║███████╗
+  ██║  ██║██║╚██╔╝██║╚════██║
+  ██████╔╝██║ ╚═╝ ██║███████║
+  ╚═════╝ ╚═╝     ╚═╝╚══════╝`;
+
+    const DMS_USERS = {
+      'root':    { pass: 'metaphysics', clearance: 5, title: 'ROOT ADMINISTRATOR' },
+      'guest':   { pass: '',            clearance: 0, title: 'UNAUTHENTICATED OBSERVER' },
+      'archivist': { pass: 'archive',   clearance: 2, title: 'JUNIOR ARCHIVIST' },
+      'overseer':  { pass: 'threshold', clearance: 4, title: 'REALITY OVERSEER' },
+    };
+
+    const DMS_MOTD = [
+      ['dim',    '════════════════════════════════════════════════════════════════'],
+      ['bright', '  DEPARTMENT OF METAPHYSICAL SCIENCES'],
+      ['dim',    '  Secure Terminal Access — Classification Level Ω'],
+      ['dim',    '════════════════════════════════════════════════════════════════'],
+      ['',       ''],
+      ['warn',   '  WARNING: Unauthorized access to this system is a violation of'],
+      ['warn',   '  Reality Statute §4.7 and may result in ontological sanctions.'],
+      ['',       ''],
+      ['dim',    '  Node:     ARCHIVE-01 // uptime 847d 11h 32m'],
+      ['dim',    '  Location: [REDACTED], Sub-basement Ω'],
+      ['dim',    '  Kernel:   metaphysd 3.1.4-stable'],
+      ['',       ''],
+    ];
+
+    const DMS_SHELL_RESPONSES = {
+      'help': [
+        ['dim', '  Available commands:'],
+        ['',    '  help       — show this message'],
+        ['',    '  whoami     — display current user info'],
+        ['',    '  ls         — list classified directory'],
+        ['',    '  cat        — read a file (try: cat anomaly.log)'],
+        ['',    '  ping       — ping the void'],
+        ['',    '  logout     — end session'],
+        ['',    '  clear      — clear terminal'],
+        ['',    '  exit       — close terminal'],
+      ],
+      'whoami': null, // handled dynamically
+      'ls': [
+        ['dim',    '  /dms/classified/'],
+        ['bright', '  anomaly.log          [UNCLASSIFIED]'],
+        ['',       '  incident_47.txt      [LEVEL 3 CLEARANCE REQUIRED]'],
+        ['',       '  baseline_reality.db  [LEVEL 4 CLEARANCE REQUIRED]'],
+        ['err',    '  void_correspondence/ [ABOVE TOP SECRET]'],
+        ['',       '  .motd                [readable]'],
+        ['dim',    ''],
+        ['dim',    '  4 items hidden due to insufficient clearance.'],
+      ],
+      'cat anomaly.log': [
+        ['dim',    '  -- anomaly.log — last modified 3 cycles ago --'],
+        ['',       ''],
+        ['',       '  [07:14:03] Baseline deviation: +0.003% — within tolerance'],
+        ['warn',   '  [11:22:47] ALERT: Subject 7 made unauthorized eye contact with Mirror B'],
+        ['',       '  [11:22:48] Countermeasure deployed. Subject reclassified.'],
+        ['',       '  [14:05:11] Routine causality audit passed (19/20 timelines)'],
+        ['err',    '  [14:05:12] Timeline 14 audit: FAILED — rescheduled'],
+        ['',       '  [19:30:00] Ontological stability: 94.7% — acceptable'],
+        ['warn',   '  [23:59:59] [MESSAGE CORRUPTED — entropy overflow]'],
+      ],
+      'cat incident_47.txt': [
+        ['err', '  ACCESS DENIED — Level 3 clearance required.'],
+        ['dim', '  Your clearance: {CL}'],
+      ],
+      'cat baseline_reality.db': [
+        ['err', '  ACCESS DENIED — Level 4 clearance required.'],
+        ['dim', '  Your clearance: {CL}'],
+      ],
+      'cat void_correspondence/': [
+        ['err', '  ████ MEMETIC HAZARD ████'],
+        ['err', '  Reading attempt logged. Incident report filed.'],
+        ['dim', '  Please report to Ontological Compliance within 24h.'],
+      ],
+      'ping': [
+        ['',    '  PING void (∅) — 56 bytes of data'],
+        ['dim', '  64 bytes from ∅: seq=0 ttl=∞  time=NaN ms'],
+        ['dim', '  64 bytes from ∅: seq=1 ttl=∞  time=NaN ms'],
+        ['dim', '  64 bytes from ∅: seq=2 ttl=∞  time=NaN ms'],
+        ['warn','  WARNING: Response originated before request was sent.'],
+        ['dim', '  3 packets transmitted, 3 received, 0% packet loss'],
+      ],
+      'sudo': [
+        ['err', '  This incident has been reported to the Ministry of Causes.'],
+      ],
+      'rm -rf /': [
+        ['err',    '  ...'],
+        ['err',    '  Reality deletion requires a signed Form DMS-ΩΩ.'],
+        ['warn',   '  Attempting anyway...'],
+        ['dim',    '  rm: cannot remove \'/existence\': Permission denied'],
+        ['',       '  Phew.'],
+      ],
+    };
+
+    let dmsState = {
+      open: false,
+      stage: 'username',  // username | password | shell
+      username: '',
+      user: null,
+      history: [],
+      histIdx: -1,
+    };
+
+    function openDMSTerminal() {
+      gnomeCloseAllPanels();
+      dmsState = { open: true, stage: 'username', username: '', user: null, history: [], histIdx: -1 };
+      const overlay = document.getElementById('dms-overlay');
+      overlay.classList.add('open');
+      const body = document.getElementById('dms-body');
+      body.innerHTML = '';
+
+      // ASCII header
+      const ascii = document.createElement('div');
+      ascii.className = 'dms-ascii';
+      ascii.textContent = DMS_ASCII;
+      body.appendChild(ascii);
+
+      // MOTD
+      DMS_MOTD.forEach(([cls, text]) => dmsAppendLine(text, cls));
+
+      // Set prompt and focus
+      dmsSetStage('username');
+
+      document.getElementById('dms-close-btn').onclick = closeDMSTerminal;
+      document.getElementById('dms-input').addEventListener('keydown', onDMSKey);
+      setTimeout(() => document.getElementById('dms-input').focus(), 60);
+    }
+
+    function closeDMSTerminal() {
+      const overlay = document.getElementById('dms-overlay');
+      overlay.classList.remove('open');
+      dmsState.open = false;
+      document.getElementById('dms-input').removeEventListener('keydown', onDMSKey);
+      document.getElementById('dms-input').value = '';
+    }
+
+    function dmsAppendLine(text, cls) {
+      const body = document.getElementById('dms-body');
+      const line = document.createElement('span');
+      line.className = 'dms-line' + (cls ? ' dms-' + cls : '');
+      line.textContent = text;
+      body.appendChild(line);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function dmsSetStage(stage) {
+      dmsState.stage = stage;
+      const promptEl = document.getElementById('dms-prompt');
+      const input    = document.getElementById('dms-input');
+      input.value = '';
+      input.disabled = false;
+      if (stage === 'username') {
+        promptEl.textContent = 'login: ';
+        input.type = 'text';
+      } else if (stage === 'password') {
+        promptEl.textContent = 'password: ';
+        input.type = 'password';
+      } else if (stage === 'shell') {
+        promptEl.textContent = `dms@archive:~$ `;
+        input.type = 'text';
+      }
+      input.focus();
+    }
+
+    function onDMSKey(e) {
+      const input = document.getElementById('dms-input');
+      if (e.key === 'Escape') {
+        closeDMSTerminal();
+        return;
+      }
+      // history navigation in shell
+      if (dmsState.stage === 'shell') {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (dmsState.histIdx < dmsState.history.length - 1) {
+            dmsState.histIdx++;
+            input.value = dmsState.history[dmsState.history.length - 1 - dmsState.histIdx] || '';
+          }
+          return;
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (dmsState.histIdx > 0) {
+            dmsState.histIdx--;
+            input.value = dmsState.history[dmsState.history.length - 1 - dmsState.histIdx] || '';
+          } else {
+            dmsState.histIdx = -1;
+            input.value = '';
+          }
+          return;
+        }
+      }
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const val = input.value;
+      input.value = '';
+
+      if (dmsState.stage === 'username') {
+        // echo username
+        dmsAppendLine(`login: ${val}`, 'dim');
+        dmsState.username = val.trim().toLowerCase();
+        if (!dmsState.username) { dmsSetStage('username'); return; }
+        dmsSetStage('password');
+
+      } else if (dmsState.stage === 'password') {
+        // don't echo password
+        dmsAppendLine('password: ········', 'dim');
+        const userData = DMS_USERS[dmsState.username];
+        if (userData && (userData.pass === '' || userData.pass === val)) {
+          dmsState.user = { ...userData, name: dmsState.username };
+          dmsAppendLine('', '');
+          dmsAppendLine('  ┌─────────────────────────────────────────────┐', 'dim');
+          dmsAppendLine(`  │  ACCESS GRANTED                             │`, 'bright');
+          dmsAppendLine(`  │  Welcome, ${(dmsState.user.title).padEnd(33)}│`, '');
+          dmsAppendLine(`  │  Clearance Level: ${String(dmsState.user.clearance).padEnd(26)}│`, '');
+          dmsAppendLine('  └─────────────────────────────────────────────┘', 'dim');
+          dmsAppendLine('', '');
+          dmsAppendLine('  Type "help" for available commands.', 'dim');
+          dmsAppendLine('', '');
+          dmsSetStage('shell');
+        } else {
+          dmsAppendLine('', '');
+          dmsAppendLine('  ACCESS DENIED — Invalid credentials.', 'err');
+          if (dmsState.username === 'root') {
+            dmsAppendLine('  Hint: have you tried the name of the field itself?', 'dim');
+          }
+          dmsAppendLine('', '');
+          dmsState.username = '';
+          dmsState.user = null;
+          setTimeout(() => dmsSetStage('username'), 300);
+        }
+
+      } else if (dmsState.stage === 'shell') {
+        const cmd = val.trim();
+        if (!cmd) return;
+        dmsState.history.push(cmd);
+        dmsState.histIdx = -1;
+        dmsAppendLine(`dms@archive:~$ ${cmd}`, 'dim');
+
+        if (cmd === 'clear') {
+          document.getElementById('dms-body').innerHTML = '';
+          return;
+        }
+        if (cmd === 'exit' || cmd === 'logout') {
+          dmsAppendLine('', '');
+          dmsAppendLine('  Session terminated. Reality audit complete.', 'dim');
+          dmsAppendLine('', '');
+          setTimeout(closeDMSTerminal, 1200);
+          document.getElementById('dms-input').disabled = true;
+          return;
+        }
+        if (cmd === 'whoami') {
+          dmsAppendLine('', '');
+          dmsAppendLine(`  User:      ${dmsState.user.name}`, '');
+          dmsAppendLine(`  Title:     ${dmsState.user.title}`, '');
+          dmsAppendLine(`  Clearance: Level ${dmsState.user.clearance}`, dmsState.user.clearance >= 4 ? 'bright' : '');
+          dmsAppendLine(`  Node:      ARCHIVE-01`, 'dim');
+          dmsAppendLine('', '');
+          return;
+        }
+
+        const resp = DMS_SHELL_RESPONSES[cmd];
+        if (resp) {
+          dmsAppendLine('', '');
+          resp.forEach(([cls, text]) => {
+            const line = text.replace('{CL}', dmsState.user ? dmsState.user.clearance : 0);
+            // clearance check for protected files
+            if (cmd === 'cat incident_47.txt' && dmsState.user && dmsState.user.clearance >= 3) {
+              // override — they have access
+              if (cls === 'err') return;
+              if (text.includes('{CL}')) return;
+            }
+            if (cmd === 'cat baseline_reality.db' && dmsState.user && dmsState.user.clearance >= 4) {
+              if (cls === 'err') return;
+              if (text.includes('{CL}')) return;
+            }
+            dmsAppendLine(line, cls);
+          });
+          // unlock content for high clearance
+          if (cmd === 'cat incident_47.txt' && dmsState.user && dmsState.user.clearance >= 3) {
+            dmsAppendLine('  -- incident_47.txt --', 'dim');
+            dmsAppendLine('', '');
+            dmsAppendLine('  On [DATE REDACTED], Subject 47 achieved unassisted', '');
+            dmsAppendLine('  dimensional awareness without Department authorization.', '');
+            dmsAppendLine('  Subject was subsequently relocated to Plane 3B.', 'warn');
+            dmsAppendLine('  Status: ongoing monitoring.', 'dim');
+            dmsAppendLine('', '');
+          }
+          if (cmd === 'cat baseline_reality.db' && dmsState.user && dmsState.user.clearance >= 4) {
+            dmsAppendLine('  [db] version=4.1 consensus=STABLE', 'dim');
+            dmsAppendLine('  [db] observers=7,412,000,000  agreed_reality=94.7%', '');
+            dmsAppendLine('  [db] divergence_threshold=0.01%', '');
+            dmsAppendLine('  [db] last_reconciliation=3 cycles ago', 'dim');
+            dmsAppendLine('  [db] NOTE: 5.3% of observers experiencing localized', 'warn');
+            dmsAppendLine('             reality drift. Considered acceptable.', 'warn');
+            dmsAppendLine('', '');
+          }
+          dmsAppendLine('', '');
+        } else if (cmd.startsWith('cat ')) {
+          dmsAppendLine('', '');
+          dmsAppendLine(`  cat: ${cmd.slice(4)}: No such file or directory`, 'err');
+          dmsAppendLine('', '');
+        } else if (cmd === 'cd') {
+          dmsAppendLine('', '');
+          dmsAppendLine('  There is nowhere else to go.', 'dim');
+          dmsAppendLine('', '');
+        } else if (cmd.startsWith('cd ')) {
+          dmsAppendLine('', '');
+          dmsAppendLine(`  cd: ${cmd.slice(3)}: Permission denied or does not exist in this plane.`, 'err');
+          dmsAppendLine('', '');
+        } else if (cmd === 'date') {
+          dmsAppendLine('', '');
+          dmsAppendLine(`  ${new Date().toUTCString()} (local)`, '');
+          dmsAppendLine('  [WARNING: Local time may differ from Consensus Time by up to 3 cycles]', 'warn');
+          dmsAppendLine('', '');
+        } else if (cmd === 'uname -a') {
+          dmsAppendLine('', '');
+          dmsAppendLine('  MetaOS 3.1.4-stable #1 SMP DMS ARCHIVE-01 metaphysd GNU/Linux', 'dim');
+          dmsAppendLine('', '');
+        } else if (cmd === 'man metaphysics') {
+          dmsAppendLine('', '');
+          dmsAppendLine('  No manual entry for metaphysics.', 'dim');
+          dmsAppendLine('  (Some things resist documentation.)', '');
+          dmsAppendLine('', '');
+        } else {
+          dmsAppendLine('', '');
+          dmsAppendLine(`  bash: ${cmd}: command not found`, 'err');
+          dmsAppendLine('  Type "help" for available commands.', 'dim');
+          dmsAppendLine('', '');
+        }
+      }
+    }
+
+    // Click outside DMS window to close
+    document.getElementById('dms-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeDMSTerminal();
+    });
+
+    /* ============================================================
+       BOOT SEQUENCE
+       ============================================================ */
     function typeLine(entry, onDone) {
       if (entry.type === "menu") {
         const wrap = document.createElement('div');
@@ -1873,18 +2944,15 @@
         onDone();
         return;
       }
-
       const div = document.createElement('div');
       div.className = 'line';
       linesEl.appendChild(div);
       requestAnimationFrame(() => div.classList.add('shown'));
-
       if (!entry.text) {
         div.innerHTML = '&nbsp;';
         setTimeout(onDone, 80);
         return;
       }
-
       let charIndex = 0;
       const speed = 25;
       function typeChar() {
@@ -1900,9 +2968,9 @@
     }
 
     function runScript() {
-      if (i >= script.length) return;
-      const entry = script[i];
-      i++;
+      if (lineI >= script.length) return;
+      const entry = script[lineI];
+      lineI++;
       const delay = entry.text === "" ? 60 : 0;
       setTimeout(() => typeLine(entry, runScript), delay);
     }
@@ -1910,101 +2978,32 @@
     setTimeout(runScript, 350);
     setTimeout(() => hintEl.classList.add('shown'), 600);
 
-    // ---- XP-era fake browser chrome interactivity ----
+    /* ============================================================
+       XP CHROME INTERACTIVITY
+       ============================================================ */
     const xpBackBtn = document.querySelector('.xp-tool-back');
-    if (xpBackBtn) {
-      xpBackBtn.addEventListener('click', () => simulateKey('Backspace'));
-    }
+    if (xpBackBtn) xpBackBtn.addEventListener('click', () => simulateKey('Backspace'));
 
     const xpHomeBtn = document.querySelector('.xp-tool-home');
-    if (xpHomeBtn) {
-      xpHomeBtn.addEventListener('click', () => goHome());
-    }
+    if (xpHomeBtn) xpHomeBtn.addEventListener('click', () => goHome());
 
-    const xpMinBtn = document.querySelector('.xp-btn-min');
-    if (xpMinBtn) {
-      xpMinBtn.addEventListener('click', () => {
-        if (document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        }
-      });
-    }
+    const xpMinBtn  = document.querySelector('.xp-btn-min');
+    if (xpMinBtn) xpMinBtn.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    });
 
-    const xpMaxBtn = document.querySelector('.xp-btn-max');
-    if (xpMaxBtn) {
-      xpMaxBtn.addEventListener('click', () => {
-        fullscreenRequested = true;
-        hintEl.classList.remove('shown');
-        doRequestFullscreen();
-      });
-    }
+    const xpMaxBtn  = document.querySelector('.xp-btn-max');
+    if (xpMaxBtn) xpMaxBtn.addEventListener('click', () => {
+      fullscreenRequested = true;
+      hintEl.classList.remove('shown');
+      doRequestFullscreen();
+    });
 
     const xpCloseBtn = document.querySelector('.xp-btn-close');
-    if (xpCloseBtn) {
-      xpCloseBtn.addEventListener('click', () => {
-        if (document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        }
-        try { window.close(); } catch (err) {}
-      });
-    }
-
-    // ---- Modern (Ubuntu/GNOME) chrome interactivity ----
-    const gnomeMinBtn = document.querySelector('.gnome-btn-min');
-    if (gnomeMinBtn) {
-      gnomeMinBtn.addEventListener('click', () => {
-        if (document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        }
-      });
-    }
-
-    const gnomeMaxBtn = document.querySelector('.gnome-btn-max');
-    if (gnomeMaxBtn) {
-      gnomeMaxBtn.addEventListener('click', () => {
-        fullscreenRequested = true;
-        hintEl.classList.remove('shown');
-        doRequestFullscreen();
-      });
-    }
-
-    const gnomeCloseBtn = document.querySelector('.gnome-btn-close');
-    if (gnomeCloseBtn) {
-      gnomeCloseBtn.addEventListener('click', () => {
-        if (document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        }
-        try { window.close(); } catch (err) {}
-      });
-    }
-
-    const gnomeDockHome = document.getElementById('gnome-dock-home');
-    if (gnomeDockHome) {
-      gnomeDockHome.addEventListener('click', () => goHome());
-    }
-
-    const gnomeDockSettings = document.getElementById('gnome-dock-settings');
-    if (gnomeDockSettings) {
-      gnomeDockSettings.addEventListener('click', () => dockOpenSettings());
-    }
-
-    const gnomePowerBtn = document.getElementById('gnome-power-btn');
-    if (gnomePowerBtn) {
-      gnomePowerBtn.addEventListener('click', () => performExit());
-    }
-
-    function updateGnomeClock() {
-      const el = document.getElementById('gnome-clock');
-      if (!el) return;
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      el.textContent = `${days[now.getDay()]} ${hh}:${mm}`;
-    }
-    updateGnomeClock();
-    setInterval(updateGnomeClock, 15000);
+    if (xpCloseBtn) xpCloseBtn.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      try { window.close(); } catch (err) {}
+    });
   </script>
-
   </body>
 </html>
