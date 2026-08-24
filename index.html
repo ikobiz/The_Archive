@@ -413,7 +413,6 @@
       font-weight: bold;
     }
 
-    /* ---------------- UI ERAS ---------------- */
     body.era-modern .crt,
     body.era-2000s .crt,
     body.era-2010s .crt {
@@ -443,7 +442,6 @@
       animation: none;
     }
 
-    /* Modern */
     body.era-modern .crt { background: #0b0d10; }
     body.era-modern .lines, body.era-modern .play-screen {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -465,7 +463,6 @@
     body.era-modern .pin-dot { border-color: #6366f1; }
     body.era-modern .pin-dot.filled::after { text-shadow: none; }
 
-    /* 2000's (Windows XP Luna / Web 1.0) */
     body.era-2000s .crt {
       background:
         repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0, rgba(255,255,255,0.5) 2px, transparent 2px, transparent 42px),
@@ -478,7 +475,6 @@
       font-size: 13px;
     }
 
-    /* fake browser chrome */
     .xp-titlebar, .xp-toolbar { display: none; }
     body.era-2000s .xp-titlebar, body.era-2000s .xp-toolbar {
       display: flex;
@@ -565,7 +561,6 @@
       cursor: pointer;
     }
 
-    /* groupbox-style section headers */
     body.era-2000s .section-title {
       background: linear-gradient(to bottom,
         color-mix(in srgb, var(--fg) 60%, white),
@@ -594,7 +589,6 @@
       50% { opacity: 0; }
     }
 
-    /* 3D beveled rows, Windows-button style */
     body.era-2000s .menu-row, body.era-2000s .game-row, body.era-2000s .settings-row {
       background: linear-gradient(to bottom, #fefefe, #ece9d8);
       border-top: 1px solid #fff;
@@ -634,7 +628,6 @@
       border: 1px solid #9a9a8c;
     }
 
-    /* 2010's (flat / early Bootstrap) */
     body.era-2010s .crt { background: #eef1f5; }
     body.era-2010s .lines, body.era-2010s .play-screen {
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -659,7 +652,6 @@
     body.era-2010s .pin-dot { border-color: #2980b9; color: #2980b9; }
     body.era-2010s .pin-dot.filled::after { color: #2980b9; text-shadow: none; }
 
-    /* Mouse navigation affordances (Modern / 2000's / 2010's only) */
     body.mouse-nav .menu-row,
     body.mouse-nav .game-row,
     body.mouse-nav .settings-row {
@@ -833,7 +825,6 @@
     document.addEventListener('keydown', requestFullscreen, { once: true });
     document.addEventListener('click', requestFullscreen, { once: true });
 
-    // ---- CRT effect settings ----
     const settings = {
       scanlines: true,
       noise: true,
@@ -961,9 +952,8 @@
       linesEl.appendChild(responseLine);
     }
 
-    // ---- Settings screen ----
     let settingsSelectedIndex = 0;
-    let openDropdownType = null; // null | 'theme' | 'era'
+    let openDropdownType = null;
     let dropdownHighlightIndex = 0;
 
     function openSettingsScreen() {
@@ -1132,7 +1122,6 @@
     }
 
     function onSettingsScreenKeydown(e) {
-      // While a dropdown is open, arrow keys/enter/escape control the dropdown itself
       if (openDropdownType) {
         const options = openDropdownType === 'theme' ? themes : eras;
         if (e.key === 'ArrowDown') {
@@ -1714,7 +1703,6 @@
     setTimeout(runScript, 350);
     setTimeout(() => hintEl.classList.add('shown'), 600);
 
-    // ---- XP-era fake browser chrome interactivity ----
     const xpBackBtn = document.querySelector('.xp-tool-back');
     if (xpBackBtn) {
       xpBackBtn.addEventListener('click', () => simulateKey('Backspace'));
